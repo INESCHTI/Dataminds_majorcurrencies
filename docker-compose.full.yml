@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # ── Databases ──────────────────────────────────
+  influxdb:
+    image: influxdb:2.7
+    container_name: forex-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=forexalpha2026
+      - DOCKER_INFLUXDB_INIT_ORG=forexalpha
+      - DOCKER_INFLUXDB_INIT_BUCKET=forex_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-token
+      - DOCKER_INFLUXDB_INIT_RETENTION=8760h
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: forex-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=forex_metadata
+      - POSTGRES_USER=forex_user
+      - POSTGRES_PASSWORD=forex_pass_2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # ── Django Backend ─────────────────────────────
+  django:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: forex-django
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=backend.settings
+      - DJANGO_SECRET_KEY=forex-alpha-secret-key-prod-2026
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=forex_metadata
+      - POSTGRES_USER=forex_user
+      - POSTGRES_PASSWORD=forex_pass_2026
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=my-super-secret-token
+      - INFLUXDB_ORG=forexalpha
+      - INFLUXDB_BUCKET=forex_data
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - .:/workspace            # workspace root (agents/, ml_models.py, etc.)
+      - models_rl:/workspace/models_rl
+    depends_on:
+      - postgres
+      - influxdb
+    restart: unless-stopped
+    command: >
+      sh -c "cd /workspace/backend &&
+             python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # ── React Frontend (dev server) ────────────────
+  react:
+    image: node:20-alpine
+    container_name: forex-react
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm start"
+    depends_on:
+      - django
+    restart: unless-stopped
+
+volumes:
+  influxdb_data:
+  postgres_data:
+  models_rl:
