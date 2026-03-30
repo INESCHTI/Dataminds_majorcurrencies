@@ -1,0 +1,43 @@
+Feature,Purpose,Helpfulness
+returns_simple,Simple return from previous close,Shows price change direction and magnitude.
+returns_log,Logarithmic return,Better for statistical analysis and compounding.
+volatility_20,20-period rolling volatility,Measures recent price variability.
+sma_5,5-period simple moving average,Short-term trend direction.
+sma_10,10-period simple moving average,Short/medium trend direction.
+sma_20,20-period simple moving average,Medium-term trend direction.
+sma_50,50-period simple moving average,Longer-term trend direction.
+sma_200,200-period simple moving average,Major trend filter.
+ema_12,12-period exponential moving average,Faster trend signal.
+ema_26,26-period exponential moving average,Slower trend signal.
+rsi_14,14-period Relative Strength Index,Detects overbought/oversold conditions.
+roc_12,12-period Rate of Change,Measures momentum speed.
+macd,MACD line (trend/momentum),Shows trend changes and momentum.
+macd_signal,MACD signal line,MACD smoothing for signals.
+macd_hist,MACD histogram,"MACD/Signal difference, shows momentum shifts."
+bb_upper,Bollinger Bands upper band,Upper price volatility boundary.
+bb_middle,Bollinger Bands middle (SMA),Central tendency of price.
+bb_lower,Bollinger Bands lower band,Lower price volatility boundary.
+bb_width,Bollinger Band width,Measures volatility expansion/contraction.
+bb_position,Position within Bollinger Bands,Shows where price is within bands.
+atr_14,14-period Average True Range,Measures market volatility.
+stoch_k,%K Stochastic Oscillator,Shows price position in recent range.
+stoch_d,%D Stochastic Oscillator,"Smoothed %K, for signals."
+high_low_ratio,(High-Low)/Close ratio,Measures daily price spread.
+close_open_ratio,(Close-Open)/Close ratio,Shows bullish/bearish candle strength.
+body_size,Absolute candle body size,Measures price movement strength.
+wick_upper,Upper wick size,Shows price rejection above body.
+wick_lower,Lower wick size,Shows price rejection below body.
+returns_lag_1,Lagged simple return (1),Captures short-term return memory.
+returns_lag_2,Lagged simple return (2),Captures short-term return memory.
+returns_lag_3,Lagged simple return (3),Captures short-term return memory.
+returns_lag_5,Lagged simple return (5),Captures short-term return memory.
+close_lag_1,Lagged close price (1),Previous close for ML models.
+close_lag_2,Lagged close price (2),Previous close for ML models.
+close_lag_3,Lagged close price (3),Previous close for ML models.
+close_lag_5,Lagged close price (5),Previous close for ML models.
+volume_lag_1,Lagged volume (1),Previous volume for ML models.
+volume_lag_2,Lagged volume (2),Previous volume for ML models.
+volume_lag_3,Lagged volume (3),Previous volume for ML models.
+volume_lag_5,Lagged volume (5),Previous volume for ML models.
+volume_sma_20,20-period volume SMA,Shows average trading activity.
+volume_ratio,Volume/Volume SMA ratio,Detects unusual volume spikes.

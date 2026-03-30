@@ -1,0 +1,68 @@
+omprendre le Code de votre Agent Technique (FX-AlphaLab)
+
+Ce script Python est le "cerveau" qui entraîne votre premier agent. Il suit une logique rigoureuse de Data Science. Voici les 5 étapes clés expliquées simplement :
+
+
+
+
+1. Le Nettoyage de Sécurité (drop_price_columns)
+
+Ce que fait le code : Il cherche et supprime toutes les colonnes qui contiennent des mots comme "open", "high", "low", "close" ou "volume".
+
+•
+Pourquoi c'est important ? C'est pour éviter le "Data Leakage" (fuite de données). Si le modèle connaît déjà le prix de clôture actuel, il est trop facile pour lui de deviner s'il va monter ou descendre. On veut qu'il apprenne uniquement à partir des indicateurs techniques (RSI, MACD, etc.).
+
+2. La Création de la Cible (create_target)
+
+Ce que fait le code : Il regarde le prix de la période suivante (shift(-1)) et le compare au prix actuel.
+
+•
+Le résultat :
+
+•
+Si ça monte de plus de 0.0002 → Marqué comme 1 (Achat).
+
+•
+Si ça baisse de plus de 0.0002 → Marqué comme -1 (Vente).
+
+•
+Sinon → Marqué comme 0 (Attendre).
+C'est ce que le modèle va essayer d'apprendre à prédire.
+
+
+
+3. Le Respect du Temps (chronological_split)
+
+Ce que fait le code : Il prend les 80% premières données pour l'entraînement et les 20% dernières pour le test.
+
+•
+Pourquoi c'est "Smart" ? Dans le trading, on ne peut pas mélanger les données au hasard. On doit toujours s'entraîner sur le passé pour prédire le futur. C'est une règle d'or en finance.
+
+4. La "Chaîne de Montage" (Pipeline)
+
+Le code utilise une Pipeline, qui est une suite d'étapes automatiques :
+
+1.
+Imputer (SimpleImputer) : Si une donnée manque, il la remplace par la valeur médiane (pour ne pas faire planter le calcul).
+
+2.
+Scaler (StandardScaler) : Il met toutes les données à la même échelle (entre -1 et 1 environ). Sans cela, un indicateur avec de gros chiffres écraserait les autres.
+
+3.
+RandomForestClassifier : C'est l'algorithme d'IA. Il crée 100 "arbres de décision" qui votent tous ensemble pour donner la meilleure prédiction.
+
+5. La Sauvegarde (joblib.dump)
+
+Ce que fait le code : Une fois que l'IA a fini d'apprendre, il enregistre tout son savoir dans un fichier appelé technical_agent_model.pkl.
+
+•
+À quoi ça sert ? Cela permet à votre autre script (inference.py) de charger l'intelligence de l'agent instantanément sans avoir à tout ré-entraîner à chaque fois.
+
+
+
+
+💡 Résumé pour le prof :
+
+
+"Notre script utilise une Pipeline Scikit-Learn robuste. Il traite les données en éliminant tout risque de Data Leakage, applique une normalisation (Scaling) et entraîne un modèle Random Forest sur une division chronologique stricte. Le modèle final est exporté en format Pickle (.pkl) pour être utilisé en temps réel par notre système multi-agents."
+

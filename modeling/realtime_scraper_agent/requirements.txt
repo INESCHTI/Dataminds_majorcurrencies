@@ -1,0 +1,6 @@
+MetaTrader5
+influxdb-client
+psycopg2-binary
+requests
+python-dotenv
+fredapi

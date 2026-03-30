@@ -1,0 +1,194 @@
+STATISTICAL ANALYSIS REPORT
+======================================================================
+Generated: 2026-03-24 00:07:56.338366
+
+KEY FINDINGS:
+----------------------------------------------------------------------
+
+EURUSD 1H:
+  Top correlations with price:
+    - EUR/USD Exchange Rate: 0.9963
+    - high: 0.9914
+    - low: 0.9884
+    - open: 0.9764
+    - EUR/USD Exchange Rate_lag_1: 0.9745
+  Stationarity: 0 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.4909
+    - US CPI: 0.6911
+    - US 10Y Treasury: -0.3605
+    - US 10Y Inflation Expectations: 0.1012
+    - US Unemployment Rate: 0.6535
+
+EURUSD 4H:
+  Top correlations with price:
+    - EUR/USD Exchange Rate: 0.9963
+    - high: 0.9914
+    - low: 0.9884
+    - open: 0.9764
+    - EUR/USD Exchange Rate_lag_1: 0.9745
+  Stationarity: 0 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.4909
+    - US CPI: 0.6911
+    - US 10Y Treasury: -0.3605
+    - US 10Y Inflation Expectations: 0.1012
+    - US Unemployment Rate: 0.6535
+
+EURUSD 1D:
+  Top correlations with price:
+    - EUR/USD Exchange Rate: 0.9963
+    - high: 0.9914
+    - low: 0.9884
+    - open: 0.9764
+    - EUR/USD Exchange Rate_lag_1: 0.9745
+  Stationarity: 0 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.4909
+    - US CPI: 0.6911
+    - US 10Y Treasury: -0.3605
+    - US 10Y Inflation Expectations: 0.1012
+    - US Unemployment Rate: 0.6535
+
+USDJPY 1H:
+  Top correlations with price:
+    - USD/JPY Exchange Rate: 0.9977
+    - low: 0.9938
+    - high: 0.9933
+    - open: 0.9844
+    - US CPI: 0.8902
+  Stationarity: 0 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.8917
+    - US CPI: 0.8902
+    - US 10Y Treasury: -0.5526
+    - US 10Y Inflation Expectations: -0.1397
+    - US Unemployment Rate: 0.7787
+
+USDJPY 4H:
+  Top correlations with price:
+    - USD/JPY Exchange Rate: 0.9977
+    - low: 0.9938
+    - high: 0.9933
+    - open: 0.9844
+    - US CPI: 0.8902
+  Stationarity: 0 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.8917
+    - US CPI: 0.8902
+    - US 10Y Treasury: -0.5526
+    - US 10Y Inflation Expectations: -0.1397
+    - US Unemployment Rate: 0.7787
+
+USDJPY 1D:
+  Top correlations with price:
+    - USD/JPY Exchange Rate: 0.9977
+    - low: 0.9938
+    - high: 0.9933
+    - open: 0.9844
+    - US CPI: 0.8902
+  Stationarity: 0 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.8917
+    - US CPI: 0.8902
+    - US 10Y Treasury: -0.5526
+    - US 10Y Inflation Expectations: -0.1397
+    - US Unemployment Rate: 0.7787
+
+GBPUSD 1H:
+  Top correlations with price:
+    - GBP/USD Exchange Rate: 0.9932
+    - high: 0.9831
+    - low: 0.9799
+    - open: 0.9531
+    - GBP/USD Exchange Rate_lag_1: 0.9482
+  Stationarity: 1 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.1470
+    - US CPI: 0.1936
+    - US 10Y Treasury: 0.0728
+    - US 10Y Inflation Expectations: 0.2592
+    - US Unemployment Rate: 0.2167
+
+GBPUSD 4H:
+  Top correlations with price:
+    - GBP/USD Exchange Rate: 0.9932
+    - high: 0.9831
+    - low: 0.9799
+    - open: 0.9531
+    - GBP/USD Exchange Rate_lag_1: 0.9482
+  Stationarity: 1 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.1470
+    - US CPI: 0.1936
+    - US 10Y Treasury: 0.0728
+    - US 10Y Inflation Expectations: 0.2592
+    - US Unemployment Rate: 0.2167
+
+GBPUSD 1D:
+  Top correlations with price:
+    - GBP/USD Exchange Rate: 0.9932
+    - high: 0.9831
+    - low: 0.9799
+    - open: 0.9531
+    - GBP/USD Exchange Rate_lag_1: 0.9482
+  Stationarity: 1 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: -0.1470
+    - US CPI: 0.1936
+    - US 10Y Treasury: 0.0728
+    - US 10Y Inflation Expectations: 0.2592
+    - US Unemployment Rate: 0.2167
+
+USDCHF 1H:
+  Top correlations with price:
+    - USD/CHF Exchange Rate: 0.9968
+    - low: 0.9930
+    - high: 0.9893
+    - open: 0.9805
+    - Federal Funds Rate_lag_5: 0.6949
+  Stationarity: 1 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: 0.6500
+    - US CPI: -0.7685
+    - US 10Y Treasury: 0.3691
+    - US 10Y Inflation Expectations: -0.0413
+    - US Unemployment Rate: -0.7038
+
+USDCHF 4H:
+  Top correlations with price:
+    - USD/CHF Exchange Rate: 0.9968
+    - low: 0.9930
+    - high: 0.9893
+    - open: 0.9805
+    - Federal Funds Rate_lag_5: 0.6949
+  Stationarity: 1 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: 0.6500
+    - US CPI: -0.7685
+    - US 10Y Treasury: 0.3691
+    - US 10Y Inflation Expectations: -0.0413
+    - US Unemployment Rate: -0.7038
+
+USDCHF 1D:
+  Top correlations with price:
+    - USD/CHF Exchange Rate: 0.9968
+    - low: 0.9930
+    - high: 0.9893
+    - open: 0.9805
+    - Federal Funds Rate_lag_5: 0.6949
+  Stationarity: 1 stationary variables
+  Economic indicators impact:
+    - Federal Funds Rate: 0.6500
+    - US CPI: -0.7685
+    - US 10Y Treasury: 0.3691
+    - US 10Y Inflation Expectations: -0.0413
+    - US Unemployment Rate: -0.7038
+
+======================================================================
+RECOMMENDATIONS:
+----------------------------------------------------------------------
+1. Focus on stationary variables for time series modeling
+2. Use highly correlated economic indicators as features
+3. Apply differencing to non-stationary variables
+4. Test for Granger causality between key variables

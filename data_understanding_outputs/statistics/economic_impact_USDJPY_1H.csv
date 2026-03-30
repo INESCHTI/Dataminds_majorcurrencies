@@ -1,0 +1,6 @@
+Economic_Indicator,Correlation_with_Price,Correlation_with_Returns,Relationship,Strength
+Federal Funds Rate,-0.8916840002933913,0.05759252544874208,Negative,Strong
+US CPI,0.8901992342337485,-0.12410342694995351,Positive,Strong
+US 10Y Treasury,-0.5526450976353076,0.4270340201403869,Negative,Strong
+US 10Y Inflation Expectations,-0.13969171945384554,0.34782703468348514,Negative,Weak
+US Unemployment Rate,0.7787195850021946,0.12193570459445323,Positive,Strong

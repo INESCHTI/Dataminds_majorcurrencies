@@ -1,0 +1,90 @@
+[
+  {
+    "id": "64130e02-ca8c-4375-ba61-ec455ada2071",
+    "session_id": "sess_1774559532906_igo5ks",
+    "symbol": "EURUSD",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.15306,
+    "opened_at": "2026-03-26T21:24:18.955710+00:00",
+    "status": "OPEN",
+    "closed_at": null,
+    "close_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "BUY",
+      "global_confidence": 0.797872,
+      "decision_timestamp": "2026-03-26T21:24:18.948228+00:00",
+      "fallback_used": false
+    }
+  },
+  {
+    "id": "60ff1859-8363-4130-9e27-c6c04743bdb5",
+    "session_id": "sess_1774559532906_igo5ks",
+    "symbol": "USDJPY",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 159.812,
+    "opened_at": "2026-03-26T21:24:49.411639+00:00",
+    "status": "OPEN",
+    "closed_at": null,
+    "close_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "SELL",
+      "global_confidence": 0.797872,
+      "decision_timestamp": "2026-03-26T21:24:49.407468+00:00",
+      "fallback_used": false
+    }
+  },
+  {
+    "id": "6517c9bf-32ed-40b8-b9f1-30183f856faf",
+    "session_id": "sess_1774559532906_igo5ks",
+    "symbol": "GBPUSD",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.33308,
+    "opened_at": "2026-03-26T21:25:29.067151+00:00",
+    "status": "OPEN",
+    "closed_at": null,
+    "close_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "SELL",
+      "global_confidence": 0.797872,
+      "decision_timestamp": "2026-03-26T21:25:29.057151+00:00",
+      "fallback_used": false
+    }
+  },
+  {
+    "id": "03f55fe5-d52a-4065-b793-ec5945bf44b4",
+    "session_id": "sess_1774559532906_igo5ks",
+    "symbol": "GBPUSD",
+    "side": "SELL",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.33283,
+    "opened_at": "2026-03-26T21:27:03.528859+00:00",
+    "status": "CLOSED",
+    "closed_at": "2026-03-26T21:56:27.409673+00:00",
+    "close_price": 1.33339,
+    "pnl": -0.00056,
+    "pnl_pct": -0.042016,
+    "note": "TESTING",
+    "agent_snapshot": {
+      "final_signal": "SELL",
+      "global_confidence": 0.797872,
+      "decision_timestamp": "2026-03-26T21:27:03.522271+00:00",
+      "fallback_used": false
+    }
+  }
+]

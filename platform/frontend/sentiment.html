@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trady · Sentiment Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="/shared.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #07090f;
+            --bg-card: #0d1117;
+            --bg-hover: #111823;
+            --border: #161f2e;
+            --border-2: #1e2d42;
+            --text: #e2e8f5;
+            --text-sec: #8899b0;
+            --text-dim: #3d5066;
+            --green: #00d9a3;
+            --green-bg: rgba(0,217,163,0.08);
+            --red: #ff4466;
+            --red-bg: rgba(255,68,102,0.08);
+            --blue: #4488ff;
+            --blue-bg: rgba(68,136,255,0.08);
+            --gold: #f5b942;
+            --font: 'Manrope', sans-serif;
+            --mono: 'IBM Plex Mono', monospace;
+        }
+        html, body { min-height: 100%; background: var(--bg); }
+        body {
+            font-family: var(--font);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; height: 52px; flex-shrink: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .header::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--blue), var(--green), transparent);
+            opacity: 0.4;
+        }
+        .header-brand { display: flex; align-items: center; gap: 8px; }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 17px; font-weight: 800; letter-spacing: -0.3px;
+            text-decoration: none; color: inherit;
+        }
+        .logo-mark {
+            width: 30px; height: 30px; border-radius: 7px;
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; color: #fff;
+        }
+        .top-nav {
+            display: flex; align-items: center; gap: 4px;
+            margin-left: 16px; padding-left: 16px;
+            border-left: 1px solid var(--border);
+        }
+        .top-nav-link {
+            font-family: var(--mono);
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.4px;
+            text-decoration: none; color: var(--text-dim);
+            padding: 6px 12px; border-radius: 6px;
+            border: 1px solid transparent;
+            transition: color 0.15s, background 0.15s, border-color 0.15s;
+        }
+        .top-nav-link:hover { color: var(--text); background: var(--bg-hover); }
+        .top-nav-link.active {
+            color: var(--blue);
+            background: var(--blue-bg);
+            border-color: rgba(68,136,255,0.35);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .notif-wrap {
+            position: relative;
+        }
+        .notif-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border-2);
+            background: rgba(68,136,255,0.1);
+            color: var(--blue);
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .notif-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 17px;
+            height: 17px;
+            border-radius: 999px;
+            background: var(--red);
+            color: #fff;
+            font-family: var(--mono);
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .notif-dot.on { display: inline-flex; }
+        .notif-panel {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: min(390px, 92vw);
+            max-height: 420px;
+            overflow-y: auto;
+            background: #0b111a;
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+            display: none;
+            z-index: 40;
+        }
+        .notif-panel.open { display: block; }
+        .notif-hd {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.9px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .notif-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .notif-body { font-size: 12px; color: var(--text-sec); line-height: 1.4; }
+        .notif-time { margin-top: 4px; font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
+        .notif-empty { padding: 16px; font-size: 12px; color: var(--text-dim); text-align: center; }
+
+        .page {
+            flex: 1;
+            padding: 22px 20px 40px;
+            max-width: 980px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .page-hd { margin-bottom: 18px; }
+        .page-hd h1 {
+            font-size: 24px; font-weight: 800; letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .page-hd p {
+            font-size: 13px; color: var(--text-sec);
+            line-height: 1.55;
+            max-width: 760px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            flex-wrap: wrap;
+        }
+        .control-row label {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+        .control-row select {
+            min-width: 150px;
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border-2);
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 10px;
+            outline: none;
+        }
+        .control-row .hint {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-dim);
+            font-family: var(--mono);
+        }
+
+        .signal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 14px;
+            text-align: center;
+            position: relative;
+        }
+        .explain-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            border: 1px solid var(--border-2);
+            background: rgba(68,136,255,0.12);
+            color: var(--blue);
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .explain-btn:hover {
+            background: rgba(68,136,255,0.2);
+            border-color: var(--blue);
+        }
+        .explain-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 14px;
+        }
+        .explain-modal.open { display: flex; }
+        .explain-dialog {
+            width: min(560px, 100%);
+            background: #0b111a;
+            border: 1px solid var(--border-2);
+            border-radius: 12px;
+            box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+            padding: 14px;
+        }
+        .explain-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .explain-title {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+        .explain-close {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            color: var(--text-sec);
+            border-radius: 7px;
+            font-size: 11px;
+            font-family: var(--mono);
+            padding: 5px 8px;
+            cursor: pointer;
+        }
+        .explain-close:hover { color: var(--text); border-color: var(--border-2); }
+        .explain-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+        .signal-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+        .signal-value {
+            font-size: 56px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .signal-value.buy { color: var(--green); }
+        .signal-value.sell { color: var(--red); }
+        .signal-value.hold { color: var(--gold); }
+        .signal-value.na { color: var(--text-sec); }
+
+        .confidence {
+            max-width: 340px;
+            margin: 0 auto;
+        }
+        .confidence-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-sec);
+            margin-bottom: 6px;
+        }
+        .confidence-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(61,80,102,0.25);
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.25s ease;
+            background: linear-gradient(90deg, var(--blue), var(--green));
+        }
+
+        .signal-msg {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-sec);
+            line-height: 1.5;
+            min-height: 18px;
+        }
+
+        .features-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .section-title {
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            font-family: var(--mono);
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .feature-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(17,24,35,0.5);
+            padding: 10px 12px;
+            min-height: 74px;
+        }
+        .feature-name {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+        .feature-meta {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-sec);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .audit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+        .audit-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .audit-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(17,24,35,0.5);
+            padding: 10px 12px;
+            min-height: 66px;
+        }
+        .audit-key {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            font-family: var(--mono);
+            margin-bottom: 6px;
+        }
+        .audit-val {
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .news-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .news-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .news-item {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(17,24,35,0.5);
+            padding: 12px;
+            cursor: help;
+        }
+        .news-item:hover {
+            border-color: var(--border-2);
+            background: rgba(17,24,35,0.75);
+        }
+        .news-title {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+        .news-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .impact-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+        .impact-low {
+            color: var(--green);
+            background: var(--green-bg);
+            border-color: rgba(0,217,163,0.35);
+        }
+        .impact-medium {
+            color: var(--gold);
+            background: rgba(245,185,66,0.12);
+            border-color: rgba(245,185,66,0.35);
+        }
+        .impact-high {
+            color: var(--red);
+            background: var(--red-bg);
+            border-color: rgba(255,68,102,0.4);
+        }
+        .impact-critical {
+            color: var(--red);
+            background: var(--red-bg);
+            border-color: rgba(255,68,102,0.4);
+        }
+        .news-meta {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-sec);
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .news-popover {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            top: calc(100% + 8px);
+            z-index: 5;
+            background: #0b111a;
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            display: none;
+        }
+        .news-item.show-popover .news-popover {
+            display: block;
+        }
+        .popover-row {
+            font-size: 12px;
+            color: var(--text-sec);
+            margin-bottom: 6px;
+            line-height: 1.45;
+        }
+        .popover-row strong {
+            color: var(--text);
+            font-size: 11px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            font-family: var(--mono);
+            margin-right: 6px;
+        }
+
+        @media (max-width: 760px) {
+            .page { padding: 18px 14px 28px; }
+            .control-row { flex-direction: column; align-items: stretch; }
+            .control-row .hint { margin-left: 0; }
+            .signal-value { font-size: 44px; }
+            .feature-list { grid-template-columns: 1fr; }
+            .audit-list { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-brand">
+        <a href="/" class="logo" aria-label="Trady home">
+            <div class="logo-mark">TR</div>
+            Trady
+        </a>
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="/" class="top-nav-link">Home</a>
+            <a href="/decision.html" class="top-nav-link">Decision</a>
+            <a href="/agents.html" class="top-nav-link">Agents</a>
+            <a href="/technical.html" class="top-nav-link">Technical</a>
+            <a href="/macro.html" class="top-nav-link">Macro</a>
+            <a href="/sentiment.html" class="top-nav-link active">Sentiment</a>
+            <a href="/reporting.html" class="top-nav-link">Reporting</a>
+        </nav>
+    </div>
+    <div class="header-actions">
+        <a href="/market_comparison.html" class="header-util-link" title="Market Comparison" aria-label="Compare markets"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></a>
+        <a href="/trader_guide.html" class="header-util-link" title="Trader Guide" aria-label="Open trader guide"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18h.01"/><path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2-3 4"/></svg></a>
+        <button class="theme-toggle" id="themeToggle" type="button" title="Toggle light/dark mode" aria-label="Toggle theme"><svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+        <div class="notif-wrap">
+            <button id="notifBtn" class="notif-btn" type="button" aria-label="Notifications">🔔</button>
+            <span id="notifDot" class="notif-dot">0</span>
+            <div id="notifPanel" class="notif-panel" role="dialog" aria-label="Recent notifications">
+                <div class="notif-hd">Notifications</div>
+                <div id="notifList" class="notif-empty">No new alerts</div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="page">
+    <div class="page-hd">
+        <h1>Sentiment Agent</h1>
+        <p>
+            News-based FX sentiment analysis from NewsAPI flows, transformed into explainable signals for each major pair.
+        </p>
+    </div>
+
+    <section class="control-row">
+        <label for="symbolSelect">Symbol</label>
+        <select id="symbolSelect" aria-label="Select trading symbol for sentiment analysis">
+            <option value="EURUSD">EURUSD</option>
+            <option value="USDJPY">USDJPY</option>
+            <option value="GBPUSD">GBPUSD</option>
+            <option value="USDCHF">USDCHF</option>
+        </select>
+
+        <label for="tfSelect">Timeframe</label>
+        <select id="tfSelect" aria-label="Select sentiment timeframe">
+            <option value="1H">1H</option>
+            <option value="4H">4H</option>
+            <option value="1D">1D</option>
+        </select>
+
+        <span class="hint" id="lastUpdated">Waiting for sentiment data...</span>
+    </section>
+
+    <section class="signal-card" aria-live="polite">
+        <button id="explainDecisionBtn" class="explain-btn" type="button" aria-label="Explain this sentiment decision">i</button>
+        <div class="signal-label">Main Signal</div>
+        <div id="signalValue" class="signal-value na">N/A</div>
+        <div class="confidence">
+            <div class="confidence-meta">
+                <span id="signalPair">EURUSD · 1H</span>
+                <span id="signalConfidence">0%</span>
+            </div>
+            <div class="confidence-bar">
+                <div id="confidenceFill" class="confidence-fill"></div>
+            </div>
+        </div>
+        <p class="signal-msg" id="signalMsg">Loading sentiment signal...</p>
+    </section>
+
+    <section class="features-card">
+        <h2 class="section-title">Top Sentiment Drivers</h2>
+        <div id="featureList" class="feature-list"></div>
+    </section>
+
+    <section class="audit-card">
+        <h2 class="section-title">Decision Audit</h2>
+        <div id="auditList" class="audit-list"></div>
+    </section>
+
+    <section class="news-card">
+        <h2 class="section-title">Latest News · Hover For AI Explainability</h2>
+        <div id="newsList" class="news-list"></div>
+    </section>
+</main>
+
+<div id="explainModal" class="explain-modal" role="dialog" aria-modal="true" aria-labelledby="explainTitle">
+    <div class="explain-dialog">
+        <div class="explain-hd">
+            <div id="explainTitle" class="explain-title">Why this decision?</div>
+            <button id="explainCloseBtn" class="explain-close" type="button">Close</button>
+        </div>
+        <div id="explainBody" class="explain-body">Loading explanation...</div>
+    </div>
+</div>
+
+<script>
+    const symbolSelect = document.getElementById('symbolSelect');
+    const tfSelect = document.getElementById('tfSelect');
+    const signalValue = document.getElementById('signalValue');
+    const signalPair = document.getElementById('signalPair');
+    const signalConfidence = document.getElementById('signalConfidence');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const signalMsg = document.getElementById('signalMsg');
+    const featureList = document.getElementById('featureList');
+    const auditList = document.getElementById('auditList');
+    const lastUpdated = document.getElementById('lastUpdated');
+    const newsList = document.getElementById('newsList');
+    const explainDecisionBtn = document.getElementById('explainDecisionBtn');
+    const explainModal = document.getElementById('explainModal');
+    const explainCloseBtn = document.getElementById('explainCloseBtn');
+    const explainBody = document.getElementById('explainBody');
+    const notifBtn = document.getElementById('notifBtn');
+    const notifDot = document.getElementById('notifDot');
+    const notifPanel = document.getElementById('notifPanel');
+    const notifList = document.getElementById('notifList');
+    const explainCache = new Map();
+    let lastNewsCount = 0;
+    let lastSignalPayload = null;
+    let latestNewsArticles = [];
+    let notifications = [];
+    let unreadNotificationCount = 0;
+    const seenNotificationKeys = new Set();
+    const seenNewsKeys = new Set();
+
+    function classifyNewsImportance(article) {
+        const text = `${article?.title || ''} ${article?.description || ''}`.toLowerCase();
+        let score = 0;
+        const hit = (arr, weight) => {
+            if (arr.some((k) => text.includes(k))) score += weight;
+        };
+        hit(['breaking', 'urgent', 'war', 'attack', 'missile', 'invasion', 'sanction'], 4);
+        hit(['fed', 'ecb', 'boe', 'boj', 'rate hike', 'rate cut', 'interest rate', 'fomc'], 4);
+        hit(['cpi', 'inflation', 'nfp', 'payroll', 'unemployment', 'gdp', 'pmi'], 3);
+        hit(['oil', 'opec', 'energy', 'treasury', 'yield'], 2);
+        if (score >= 7) return { label: 'Critical', cls: 'impact-critical', level: 'critical' };
+        if (score >= 4) return { label: 'High', cls: 'impact-high', level: 'high' };
+        if (score >= 2) return { label: 'Moderate', cls: 'impact-medium', level: 'medium' };
+        return { label: 'Low', cls: 'impact-low', level: 'low' };
+    }
+
+    function renderNotifications() {
+        if (!notifications.length) {
+            notifList.className = 'notif-empty';
+            notifList.innerHTML = 'No new alerts';
+            updateNotifBadge();
+            return;
+        }
+        notifList.className = '';
+        notifList.innerHTML = notifications.slice(0, 20).map((n) => `
+            <article class="notif-item">
+                <div class="notif-title">${n.title.replace(/</g, '&lt;')}</div>
+                <div class="notif-body">${n.body.replace(/</g, '&lt;')}</div>
+                <div class="notif-time">${n.time}</div>
+            </article>
+        `).join('');
+        updateNotifBadge();
+    }
+
+    function updateNotifBadge() {
+        if (unreadNotificationCount > 0) {
+            notifDot.textContent = String(Math.min(99, unreadNotificationCount));
+            notifDot.classList.add('on');
+        } else {
+            notifDot.classList.remove('on');
+        }
+    }
+
+    function markNotificationsRead() {
+        unreadNotificationCount = 0;
+        updateNotifBadge();
+    }
+
+    function pushNotification(key, title, body) {
+        if (seenNotificationKeys.has(key)) return;
+        seenNotificationKeys.add(key);
+        notifications.unshift({ title, body, time: new Date().toLocaleTimeString() });
+        if (notifications.length > 50) notifications = notifications.slice(0, 50);
+        if (!notifPanel.classList.contains('open')) {
+            unreadNotificationCount += 1;
+        }
+        renderNotifications();
+    }
+
+    function confidenceBand(conf) {
+        const v = Number(conf || 0);
+        if (v >= 0.75) return 'High';
+        if (v >= 0.55) return 'Medium';
+        return 'Low';
+    }
+
+    function daysSince(rawDate) {
+        if (!rawDate) return null;
+        const t = new Date(rawDate).getTime();
+        if (Number.isNaN(t)) return null;
+        return Math.floor((Date.now() - t) / 86400000);
+    }
+
+    function renderAudit(items) {
+        auditList.innerHTML = items.map((it) => `
+            <article class="audit-item">
+                <div class="audit-key">${it.key}</div>
+                <div class="audit-val">${it.value}</div>
+            </article>
+        `).join('');
+    }
+
+    function refreshSentimentAudit() {
+        const payload = lastSignalPayload;
+        if (!payload) {
+            renderAudit([
+                { key: 'Data Source', value: 'PostgreSQL news_articles + forex_news' },
+                { key: 'Status', value: 'Waiting for signal data...' }
+            ]);
+            return;
+        }
+
+        const conf = Number(payload.confidence || 0);
+        const top = (payload.explanation || [])[0];
+        const ageDays = daysSince(payload.last_sentiment_update);
+        const freshness = ageDays === null ? 'unknown' : `${ageDays} day(s) old`;
+        const mode = payload.warning ? 'Fallback mode (warning present)' : 'Full inference mode';
+
+        renderAudit([
+            { key: 'Data Source', value: 'PostgreSQL news_articles + forex_news' },
+            { key: 'News Sample Size', value: `${lastNewsCount} recent article(s)` },
+            { key: 'Last Sentiment Snapshot', value: formatUpdate(payload.last_sentiment_update) || 'Unavailable' },
+            { key: 'Freshness', value: freshness },
+            { key: 'Inference Mode', value: mode },
+            { key: 'Confidence Band', value: `${confidenceBand(conf)} (${(conf * 100).toFixed(1)}%)` },
+            { key: 'Top Driver', value: top ? `${prettyName(top.feature)} (importance ${prettyNum(top.importance || 0)})` : 'Not available' },
+            { key: 'Determinism', value: 'Same model + same article set => same output' }
+        ]);
+    }
+
+    function setSignalVisual(signal) {
+        signalValue.classList.remove('buy', 'sell', 'hold', 'na');
+        const normalized = (signal || 'N/A').toUpperCase();
+        if (normalized === 'BUY') signalValue.classList.add('buy');
+        else if (normalized === 'SELL') signalValue.classList.add('sell');
+        else if (normalized === 'HOLD') signalValue.classList.add('hold');
+        else signalValue.classList.add('na');
+        signalValue.textContent = normalized;
+    }
+
+    function prettyName(name) {
+        return String(name || '')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (m) => m.toUpperCase()) || 'Sentiment Feature';
+    }
+
+    function renderFeatures(items) {
+        if (!Array.isArray(items) || items.length === 0) {
+            featureList.innerHTML = '<article class="feature-item"><div class="feature-name">No explanation available</div><div class="feature-meta"><span>importance</span><span>0.000</span></div></article>';
+            return;
+        }
+
+        featureList.innerHTML = items.slice(0, 6).map((it) => {
+            const importance = prettyNum(it.importance || 0);
+            const value = prettyNum(it.value || 0);
+            return `
+                <article class="feature-item">
+                    <div class="feature-name">${prettyName(it.feature)}</div>
+                    <div class="feature-meta"><span>importance</span><span>${importance}</span></div>
+                    <div class="feature-meta"><span>value</span><span>${value}</span></div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function prettyNum(v) {
+        const n = Number(v || 0);
+        const abs = Math.abs(n);
+        if (abs > 0 && abs < 0.001) {
+            const exp = Math.floor(Math.log10(abs));
+            const mantissa = n / Math.pow(10, exp);
+            return `${mantissa.toFixed(1)} * 10^${exp}`;
+        }
+        return n.toFixed(4);
+    }
+
+    function formatUpdate(rawDate) {
+        if (!rawDate) return null;
+        const parsed = new Date(rawDate);
+        if (Number.isNaN(parsed.getTime())) return null;
+        return parsed.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function articleKey(article, symbol) {
+        return `${symbol}::${article.title || ''}::${article.description || ''}`;
+    }
+
+    function inferEventFromHeadline(headline) {
+        const h = String(headline || '').toLowerCase();
+        if (!h) return null;
+
+        if (h.includes('fed') || h.includes('interest rate') || h.includes('rate hike') || h.includes('rate cut')) {
+            return {
+                trigger: 'Central bank rate expectations changed.',
+                impact: 'USD can reprice quickly; high rates tend to support USD, cuts can weaken USD.',
+                why: 'Rate differentials change bond yields and where global capital flows.'
+            };
+        }
+        if (h.includes('cpi') || h.includes('inflation')) {
+            return {
+                trigger: 'Inflation expectations shifted.',
+                impact: 'Higher inflation may increase rate-hike odds, often supporting USD short term.',
+                why: 'Markets front-run central bank reactions to inflation surprises.'
+            };
+        }
+        if (h.includes('nfp') || h.includes('jobs') || h.includes('unemployment') || h.includes('labor')) {
+            return {
+                trigger: 'Labor-market strength expectations changed.',
+                impact: 'Strong jobs can support USD via tighter-policy expectations; weak jobs can do the opposite.',
+                why: 'Employment data influences growth and interest-rate outlook.'
+            };
+        }
+        if (h.includes('war') || h.includes('missile') || h.includes('attack') || h.includes('conflict') || h.includes('sanction')) {
+            return {
+                trigger: 'Geopolitical risk increased.',
+                impact: 'Risk-off flows can lift safe-haven demand (often USD/CHF/JPY) and pressure risk assets.',
+                why: 'Investors cut risk exposure and rotate into liquid defensive currencies.'
+            };
+        }
+        if (h.includes('oil') || h.includes('opec') || h.includes('energy')) {
+            return {
+                trigger: 'Energy-price expectations moved.',
+                impact: 'Inflation and growth paths can shift, changing FX expectations across major pairs.',
+                why: 'Energy costs feed into inflation, trade balances, and central-bank policy outlook.'
+            };
+        }
+
+        return {
+            trigger: 'A macro-financial headline changed market sentiment.',
+            impact: 'Short-term FX direction can shift as traders reprice growth, inflation, and policy paths.',
+            why: 'News changes expectations, and prices move before official data catches up.'
+        };
+    }
+
+    function explainSignalBias(signal, symbol) {
+        const s = String(signal || '').toUpperCase();
+        if (s === 'BUY') {
+            return `Model bias is BUY for ${symbol}: recent sentiment and feature mix suggest a higher probability of upside continuation.`;
+        }
+        if (s === 'SELL') {
+            return `Model bias is SELL for ${symbol}: recent sentiment and feature mix suggest downside pressure is more likely.`;
+        }
+        if (s === 'HOLD') {
+            return `Model bias is HOLD for ${symbol}: signals are mixed, so directional edge is weak right now.`;
+        }
+        return `Model bias is currently unavailable for ${symbol}.`;
+    }
+
+    function simpleDecisionExplanation() {
+        const payload = lastSignalPayload;
+        const symbol = symbolSelect.value;
+        const timeframe = tfSelect.value;
+
+        if (!payload) {
+            return `We are still loading the signal for ${symbol} on ${timeframe}. Please wait a few seconds and click again.`;
+        }
+
+        const signal = String(payload.signal || 'N/A').toUpperCase();
+        const confidence = Math.max(0, Math.min(100, Math.round(Number(payload.confidence || 0) * 100)));
+        const top = Array.isArray(payload.explanation) && payload.explanation.length ? payload.explanation[0] : null;
+        const topDriver = top ? prettyName(top.feature) : 'recent sentiment pattern';
+        const topImportance = top ? prettyNum(top.importance || 0) : 'N/A';
+
+        const mainHeadline = latestNewsArticles.length ? String(latestNewsArticles[0].title || 'No headline').trim() : '';
+        const evt = inferEventFromHeadline(mainHeadline);
+
+        const plainSignal = explainSignalBias(signal, symbol);
+
+        const modeLine = payload.warning
+            ? `Important: ${payload.warning}`
+            : 'The model used full inference mode on the latest available news.';
+
+        return (
+            `Simple explanation for ${symbol} (${timeframe}):\n\n` +
+            `1) Decision: ${signal}\n` +
+            `2) Signal read: ${plainSignal}\n` +
+            `3) Confidence: ${confidence}%\n` +
+            `4) Top model driver: ${topDriver} (importance ${topImportance})\n\n` +
+            (mainHeadline ? `Trigger headline: ${mainHeadline}\n\n` : '') +
+            (evt ? `Impact:\n- ${evt.impact}\n\nWhy:\n- ${evt.why}\n\n` : '') +
+            `${modeLine}\n\n` +
+            `Practical note: this is probability guidance, not certainty. Keep stop-loss and fixed risk per trade.`
+        );
+    }
+
+    function openDecisionExplanation() {
+        explainBody.textContent = simpleDecisionExplanation();
+        explainModal.classList.add('open');
+    }
+
+    function closeDecisionExplanation() {
+        explainModal.classList.remove('open');
+    }
+
+    async function getExplanation(article, symbol) {
+        const key = articleKey(article, symbol);
+        if (explainCache.has(key)) return explainCache.get(key);
+
+        const res = await fetch('/api/news/explain', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: article.title || '',
+                content: article.description || '',
+                symbol,
+            }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const payload = await res.json();
+        explainCache.set(key, payload);
+        return payload;
+    }
+
+    function renderNews(articles, symbol) {
+        if (!Array.isArray(articles) || articles.length === 0) {
+            newsList.innerHTML = '<article class="news-item"><div class="news-title">No recent news found.</div></article>';
+            return;
+        }
+
+        newsList.innerHTML = articles.slice(0, 10).map((a, i) => {
+            const dt = formatUpdate(a.published_at) || 'Unknown time';
+            const imp = classifyNewsImportance(a);
+            return `
+                <article class="news-item" data-index="${i}">
+                    <div class="news-top">
+                        <div class="news-title">${(a.title || 'Untitled').replace(/</g, '&lt;')}</div>
+                        <span class="impact-badge ${imp.cls}">${imp.label}</span>
+                    </div>
+                    <div class="news-meta">
+                        <span>${(a.source || 'Unknown').replace(/</g, '&lt;')}</span>
+                        <span>${dt}</span>
+                    </div>
+                    <div class="news-popover" aria-live="polite">
+                        <div class="popover-row">Loading explanation...</div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        Array.from(newsList.querySelectorAll('.news-item')).forEach((el) => {
+            const idx = Number(el.getAttribute('data-index'));
+            const article = articles[idx];
+            const pop = el.querySelector('.news-popover');
+            let loaded = false;
+
+            const show = async () => {
+                el.classList.add('show-popover');
+                if (loaded) return;
+                loaded = true;
+                try {
+                    const x = await getExplanation(article, symbol);
+                    const assets = Array.isArray(x.affected_assets) ? x.affected_assets.join(', ') : 'N/A';
+                    pop.innerHTML = `
+                        <div class="popover-row"><strong>Summary</strong>${(x.summary || 'N/A').replace(/</g, '&lt;')}</div>
+                        <div class="popover-row"><strong>Impact</strong>${(x.market_impact || 'N/A').replace(/</g, '&lt;')}</div>
+                        <div class="popover-row"><strong>Assets</strong>${assets.replace(/</g, '&lt;')}</div>
+                        <div class="popover-row"><strong>Sentiment</strong>${x.sentiment || 'HOLD'} · ${(Number(x.confidence || 0) * 100).toFixed(1)}%</div>
+                    `;
+                } catch (err) {
+                    pop.innerHTML = `<div class="popover-row">Explanation unavailable: ${String(err.message || err)}</div>`;
+                }
+            };
+
+            el.addEventListener('mouseenter', show);
+            el.addEventListener('focusin', show);
+            el.addEventListener('mouseleave', () => el.classList.remove('show-popover'));
+            el.addEventListener('focusout', () => el.classList.remove('show-popover'));
+        });
+    }
+
+    async function loadNews() {
+        const symbol = symbolSelect.value;
+        try {
+            const response = await fetch('/api/news?limit=18', { cache: 'no-store' });
+            const payload = await response.json();
+            lastNewsCount = Number(payload.count || (payload.articles || []).length || 0);
+            latestNewsArticles = Array.isArray(payload.articles) ? payload.articles : [];
+            latestNewsArticles.slice(0, 8).forEach((a) => {
+                const key = `${a.title || ''}::${a.published_at || ''}`;
+                const imp = classifyNewsImportance(a);
+                if (!seenNewsKeys.has(key)) {
+                    seenNewsKeys.add(key);
+                    if (imp.level === 'critical' || imp.level === 'high') {
+                        pushNotification(
+                            `news:${key}`,
+                            `News Alert · ${imp.label}`,
+                            `${a.title || 'Untitled'} (${a.source || 'Unknown'})`
+                        );
+                    }
+                }
+            });
+            renderNews(latestNewsArticles, symbol);
+            refreshSentimentAudit();
+        } catch (error) {
+            newsList.innerHTML = `<article class="news-item"><div class="news-title">Failed to load news: ${error.message}</div></article>`;
+            lastNewsCount = 0;
+            latestNewsArticles = [];
+            refreshSentimentAudit();
+        }
+    }
+
+    async function loadSentiment() {
+        const symbol = symbolSelect.value;
+        const timeframe = tfSelect.value;
+
+        signalPair.textContent = `${symbol} · ${timeframe}`;
+        signalMsg.textContent = 'Loading sentiment signal...';
+        setSignalVisual('N/A');
+        signalConfidence.textContent = '0%';
+        confidenceFill.style.width = '0%';
+
+        try {
+            const response = await fetch(`/api/signals/sentiment/${symbol}?timeframe=${timeframe}&explain=true`, { cache: 'no-store' });
+            const payload = await response.json();
+            lastSignalPayload = payload;
+
+            const signal = payload.signal || 'N/A';
+            const confidence = Number(payload.confidence || 0);
+            const confidencePct = Math.max(0, Math.min(100, Math.round(confidence * 100)));
+
+            if ((signal === 'BUY' || signal === 'SELL') && confidencePct >= 80) {
+                const key = `sent:${symbol}:${timeframe}:${signal}:${Math.round(confidencePct/5)}:${payload.last_sentiment_update || ''}`;
+                pushNotification(
+                    key,
+                    `Actionable Sentiment · ${signal}`,
+                    `${symbol} ${timeframe} shows ${signal} with ${confidencePct}% confidence.`
+                );
+            }
+
+            setSignalVisual(signal);
+            signalConfidence.textContent = `${confidencePct}%`;
+            confidenceFill.style.width = `${confidencePct}%`;
+
+            const updated = formatUpdate(payload.last_sentiment_update);
+            lastUpdated.textContent = updated
+                ? `Last sentiment update: ${updated}`
+                : 'Last sentiment update: unavailable';
+
+            if (payload.error) {
+                signalMsg.textContent = payload.error;
+                renderFeatures([]);
+                refreshSentimentAudit();
+                return;
+            }
+
+            signalMsg.textContent = payload.warning || 'Signal generated from latest news sentiment aggregation.';
+            renderFeatures(payload.explanation || []);
+            refreshSentimentAudit();
+        } catch (error) {
+            setSignalVisual('N/A');
+            signalMsg.textContent = `Failed to load sentiment signal: ${error.message}`;
+            lastUpdated.textContent = 'Last sentiment update: failed';
+            renderFeatures([]);
+            lastSignalPayload = { confidence: 0, error: error.message };
+            refreshSentimentAudit();
+        }
+    }
+
+    async function refreshAll() {
+        await Promise.all([loadSentiment(), loadNews()]);
+    }
+
+    symbolSelect.addEventListener('change', refreshAll);
+    tfSelect.addEventListener('change', loadSentiment);
+    explainDecisionBtn.addEventListener('click', openDecisionExplanation);
+    explainCloseBtn.addEventListener('click', closeDecisionExplanation);
+    explainModal.addEventListener('click', (e) => {
+        if (e.target === explainModal) closeDecisionExplanation();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDecisionExplanation();
+    });
+    notifBtn.addEventListener('click', () => {
+        notifPanel.classList.toggle('open');
+        if (notifPanel.classList.contains('open')) {
+            markNotificationsRead();
+        }
+    });
+    document.addEventListener('click', (e) => {
+        if (!notifPanel.contains(e.target) && !notifBtn.contains(e.target)) {
+            notifPanel.classList.remove('open');
+        }
+    });
+    refreshAll();
+    setInterval(loadNews, 90000);
+</script>
+<script src="/shared.js"></script>
+<script src="/copilot_widget.js"></script>
+
+</body>
+</html>

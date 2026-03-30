@@ -1,0 +1,77 @@
+{
+  "method": "bin_accuracy_mapping",
+  "n_bins": 10,
+  "expected_calibration_error": 0.017748,
+  "table": [
+    {
+      "low": 0.0,
+      "high": 0.1,
+      "count": 0,
+      "empirical_accuracy": null,
+      "avg_confidence": null
+    },
+    {
+      "low": 0.1,
+      "high": 0.2,
+      "count": 0,
+      "empirical_accuracy": null,
+      "avg_confidence": null
+    },
+    {
+      "low": 0.2,
+      "high": 0.3,
+      "count": 0,
+      "empirical_accuracy": null,
+      "avg_confidence": null
+    },
+    {
+      "low": 0.3,
+      "high": 0.4,
+      "count": 0,
+      "empirical_accuracy": null,
+      "avg_confidence": null
+    },
+    {
+      "low": 0.4,
+      "high": 0.5,
+      "count": 2,
+      "empirical_accuracy": 0.5,
+      "avg_confidence": 0.470239
+    },
+    {
+      "low": 0.5,
+      "high": 0.6,
+      "count": 53,
+      "empirical_accuracy": 0.528302,
+      "avg_confidence": 0.545171
+    },
+    {
+      "low": 0.6,
+      "high": 0.7,
+      "count": 50,
+      "empirical_accuracy": 0.62,
+      "avg_confidence": 0.65068
+    },
+    {
+      "low": 0.7,
+      "high": 0.8,
+      "count": 86,
+      "empirical_accuracy": 0.72093,
+      "avg_confidence": 0.749817
+    },
+    {
+      "low": 0.8,
+      "high": 0.9,
+      "count": 98,
+      "empirical_accuracy": 0.897959,
+      "avg_confidence": 0.851564
+    },
+    {
+      "low": 0.9,
+      "high": 1.0,
+      "count": 311,
+      "empirical_accuracy": 0.983923,
+      "avg_confidence": 0.980289
+    }
+  ]
+}

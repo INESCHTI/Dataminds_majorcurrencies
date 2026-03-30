@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trady · Agents</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="/shared.css" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg:        #07090f;
+            --bg-card:   #0d1117;
+            --bg-hover:  #111823;
+            --border:    #161f2e;
+            --border-2:  #1e2d42;
+            --text:      #e2e8f5;
+            --text-sec:  #8899b0;
+            --text-dim:  #3d5066;
+            --green:     #00d9a3;
+            --green-bg:  rgba(0,217,163,0.08);
+            --blue:      #4488ff;
+            --blue-bg:   rgba(68,136,255,0.08);
+            --gold:      #f5b942;
+            --font:      'Manrope', sans-serif;
+            --mono:      'IBM Plex Mono', monospace;
+        }
+        html, body { min-height: 100%; background: var(--bg); }
+        body {
+            font-family: var(--font);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; height: 52px; flex-shrink: 0;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+        .header::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--blue), var(--green), transparent);
+            opacity: 0.4;
+        }
+        .header-brand {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 17px; font-weight: 800; letter-spacing: -0.3px;
+            text-decoration: none; color: inherit;
+        }
+        .logo-mark {
+            width: 30px; height: 30px; border-radius: 7px;
+            background: linear-gradient(135deg, var(--blue) 0%, var(--green) 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; color: #fff;
+        }
+        .top-nav {
+            display: flex; align-items: center; gap: 4px;
+            margin-left: 16px; padding-left: 16px;
+            border-left: 1px solid var(--border);
+        }
+        .top-nav-link {
+            font-family: var(--mono);
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.4px;
+            text-decoration: none; color: var(--text-dim);
+            padding: 6px 12px; border-radius: 6px;
+            border: 1px solid transparent;
+            transition: color 0.15s, background 0.15s, border-color 0.15s;
+        }
+        .top-nav-link:hover { color: var(--text); background: var(--bg-hover); }
+        .top-nav-link.active {
+            color: var(--blue);
+            background: var(--blue-bg);
+            border-color: rgba(68,136,255,0.35);
+        }
+
+        .page {
+            flex: 1;
+            padding: 22px 20px 40px;
+            max-width: 920px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .page-hd {
+            margin-bottom: 22px;
+        }
+        .page-hd h1 {
+            font-size: 22px; font-weight: 800; letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        .page-hd p {
+            font-size: 13px; color: var(--text-sec);
+            line-height: 1.55;
+            max-width: 720px;
+        }
+
+        .agent-list { display: flex; flex-direction: column; gap: 14px; }
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+        .agent-card:hover { border-color: var(--border-2); }
+        .agent-card-hd {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(17,24,35,0.5);
+        }
+        .agent-num {
+            font-family: var(--mono);
+            font-size: 12px; font-weight: 700;
+            color: var(--blue);
+            min-width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px;
+            background: var(--blue-bg);
+            border: 1px solid rgba(68,136,255,0.25);
+        }
+        .agent-titles { flex: 1; min-width: 0; }
+        .agent-titles h2 {
+            font-size: 15px; font-weight: 700;
+            line-height: 1.35;
+            margin-bottom: 4px;
+        }
+        .agent-titles .subtitle {
+            font-size: 12px; color: var(--text-sec);
+            font-weight: 500;
+        }
+        .agent-body { padding: 14px 16px 16px; }
+        .agent-section {
+            font-size: 12px; color: var(--text-sec);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .agent-section:last-child { margin-bottom: 0; }
+        .agent-section strong {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+        }
+        .bo-tags {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            margin-top: 4px;
+        }
+        .bo-tag {
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--green-bg);
+            color: var(--green);
+            border: 1px solid rgba(0,217,163,0.2);
+        }
+        .agent-cta {
+            margin-top: 12px;
+        }
+        .trx-box {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(17,24,35,0.45);
+            padding: 10px 12px;
+        }
+        .trx-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-sec);
+            padding: 3px 0;
+        }
+        .trx-key { color: var(--text-dim); }
+        .trx-val { color: var(--text); text-align: right; }
+        .agent-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-decoration: none;
+            color: var(--blue);
+            background: var(--blue-bg);
+            border: 1px solid rgba(68,136,255,0.35);
+            border-radius: 6px;
+            padding: 8px 12px;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .agent-btn:hover {
+            color: #b9d1ff;
+            background: rgba(68,136,255,0.14);
+            border-color: rgba(68,136,255,0.5);
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-brand">
+        <a href="/" class="logo" aria-label="Trady home">
+            <div class="logo-mark">TR</div>
+            Trady
+        </a>
+        <nav class="top-nav" aria-label="Main navigation">
+            <a href="/" class="top-nav-link">Home</a>
+            <a href="/decision.html" class="top-nav-link">Decision</a>
+            <a href="/agents.html" class="top-nav-link active">Agents</a>
+            <a href="/technical.html" class="top-nav-link">Technical</a>
+            <a href="/macro.html" class="top-nav-link">Macro</a>
+            <a href="/sentiment.html" class="top-nav-link">Sentiment</a>
+            <a href="/reporting.html" class="top-nav-link">Reporting</a>
+        </nav>
+    </div>
+    <div class="header-utils">
+        <a href="/market_comparison.html" class="header-util-link" title="Market Comparison" aria-label="Compare markets"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></a>
+        <a href="/trader_guide.html" class="header-util-link" title="Trader Guide" aria-label="Open trader guide"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18h.01"/><path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 2-3 4"/></svg></a>
+        <button class="theme-toggle" id="themeToggle" type="button" title="Toggle light/dark mode" aria-label="Toggle theme"><svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    </div>
+</header>
+
+<main class="page">
+    <div class="page-hd">
+        <h1>Multi-agent architecture</h1>
+        <p>
+            Overview of specialist agents and the reporting module planned for Trady.
+            Detailed behaviors and UIs will be wired as each component is implemented.
+        </p>
+    </div>
+
+    <article class="agent-card" aria-label="Transparency standards">
+        <div class="agent-card-hd">
+            <span class="agent-num">T</span>
+            <div class="agent-titles">
+                <h2>Trader Transparency Standard</h2>
+                <p class="subtitle">What every decision should expose to users</p>
+            </div>
+        </div>
+        <div class="agent-body">
+            <div class="trx-box">
+                <div class="trx-row"><span class="trx-key">Data provenance</span><span class="trx-val">Exact source table/feed and update timestamp</span></div>
+                <div class="trx-row"><span class="trx-key">Decision basis</span><span class="trx-val">Top drivers with numeric contribution</span></div>
+                <div class="trx-row"><span class="trx-key">Reliability context</span><span class="trx-val">Confidence band + fallback mode state</span></div>
+                <div class="trx-row"><span class="trx-key">Freshness guard</span><span class="trx-val">Staleness warning when inputs age out</span></div>
+            </div>
+        </div>
+    </article>
+
+    <div class="agent-list">
+
+        <article class="agent-card" style="border-color:rgba(68,136,255,0.3)">
+            <div class="agent-card-hd" style="background:linear-gradient(135deg,rgba(68,136,255,0.08),rgba(0,217,163,0.06))">
+                <span class="agent-num" style="background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;border:none">5</span>
+                <div class="agent-titles">
+                    <h2>Agent de synth&egrave;se et de d&eacute;cision</h2>
+                    <p class="subtitle">Synthesis &amp; Decision Agent — Core Intelligence</p>
+                </div>
+            </div>
+            <div class="agent-body">
+                <div class="agent-section">
+                    <strong>R&ocirc;le</strong>
+                    Re&ccedil;oit les signaux et les niveaux de confiance de tous les agents sp&eacute;cialis&eacute;s, r&eacute;sout les conflits et g&eacute;n&egrave;re une recommandation de trading finale avec un niveau de confiance global.
+                </div>
+                <div class="agent-section">
+                    <strong>Contribution aux objectifs (BO)</strong>
+                    <div class="bo-tags">
+                        <span class="bo-tag">BO2 &mdash; signaux actionnables</span>
+                        <span class="bo-tag">BO3 &mdash; r&eacute;duction des faux signaux</span>
+                    </div>
+                </div>
+                <div class="agent-section">
+                    <strong>Transparency Layer</strong>
+                    <div class="trx-box">
+                        <div class="trx-row"><span class="trx-key">Conflict resolver</span><span class="trx-val">Show per-agent vote and final weighted decision</span></div>
+                        <div class="trx-row"><span class="trx-key">Risk disclosure</span><span class="trx-val">Highlight disagreement and low-confidence consensus</span></div>
+                    </div>
+                </div>
+                <div class="agent-cta">
+                    <a class="agent-btn" href="/decision.html" aria-label="Open Decision Agent page">Open Decision Agent</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="agent-card">
+            <div class="agent-card-hd">
+                <span class="agent-num">2</span>
+                <div class="agent-titles">
+                    <h2>Agent d&rsquo;analyse technique</h2>
+                    <p class="subtitle">Technical Analysis Agent</p>
+                </div>
+            </div>
+            <div class="agent-body">
+                <div class="agent-section">
+                    <strong>R&ocirc;le</strong>
+                    Analyse les donn&eacute;es de prix et les indicateurs techniques (RSI, MACD, moyennes mobiles) pour d&eacute;tecter des patterns et des signaux de trading &agrave; court terme.
+                </div>
+                <div class="agent-section">
+                    <strong>Contribution aux objectifs (BO)</strong>
+                    <div class="bo-tags">
+                        <span class="bo-tag">BO1 &mdash; dimension technique</span>
+                        <span class="bo-tag">BO2 &mdash; signaux explicables</span>
+                    </div>
+                </div>
+                <div class="agent-section">
+                    <strong>Transparency Layer</strong>
+                    <div class="trx-box">
+                        <div class="trx-row"><span class="trx-key">Live execution view</span><span class="trx-val">Timeframe used + candle count + model health</span></div>
+                        <div class="trx-row"><span class="trx-key">Failure transparency</span><span class="trx-val">Show if data is insufficient or feed degraded</span></div>
+                    </div>
+                </div>
+                <div class="agent-cta">
+                    <a class="agent-btn" href="/technical.html" aria-label="Open Technical Agent page">Open Technical Agent</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="agent-card">
+            <div class="agent-card-hd">
+                <span class="agent-num">3</span>
+                <div class="agent-titles">
+                    <h2>Agent d&rsquo;analyse macro&eacute;conomique</h2>
+                    <p class="subtitle">Macroeconomic Analysis Agent</p>
+                </div>
+            </div>
+            <div class="agent-body">
+                <div class="agent-section">
+                    <strong>R&ocirc;le</strong>
+                    Interpr&egrave;te les indicateurs &eacute;conomiques (FRED) et leurs corr&eacute;lations avec les mouvements de devises pour identifier les tendances de fond.
+                </div>
+                <div class="agent-section">
+                    <strong>Contribution aux objectifs (BO)</strong>
+                    <div class="bo-tags">
+                        <span class="bo-tag">BO1 &mdash; dimension macro</span>
+                        <span class="bo-tag">BO2 &mdash; signaux explicables</span>
+                    </div>
+                </div>
+                <div class="agent-section">
+                    <strong>Transparency Layer</strong>
+                    <div class="trx-box">
+                        <div class="trx-row"><span class="trx-key">Regime rationale</span><span class="trx-val">Top macro factors with relative importance</span></div>
+                        <div class="trx-row"><span class="trx-key">Data freshness</span><span class="trx-val">Last macro release date + staleness warning</span></div>
+                    </div>
+                </div>
+                <div class="agent-cta">
+                    <a class="agent-btn" href="/macro.html" aria-label="Open Macro Agent page">Open Macro Agent</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="agent-card">
+            <div class="agent-card-hd">
+                <span class="agent-num">4</span>
+                <div class="agent-titles">
+                    <h2>Agent d&rsquo;analyse de sentiment</h2>
+                    <p class="subtitle">Sentiment Analysis Agent</p>
+                </div>
+            </div>
+            <div class="agent-body">
+                <div class="agent-section">
+                    <strong>R&ocirc;le</strong>
+                    Traite les actualit&eacute;s financi&egrave;res (NewsAPI) pour extraire le sentiment du march&eacute; et son impact potentiel sur les devises (potentiellement via un LLM).
+                </div>
+                <div class="agent-section">
+                    <strong>Contribution aux objectifs (BO)</strong>
+                    <div class="bo-tags">
+                        <span class="bo-tag">BO1 &mdash; dimension sentiment</span>
+                        <span class="bo-tag">BO2 &mdash; signaux explicables</span>
+                    </div>
+                </div>
+                <div class="agent-section">
+                    <strong>Transparency Layer</strong>
+                    <div class="trx-box">
+                        <div class="trx-row"><span class="trx-key">Article traceability</span><span class="trx-val">Source news list + hover explanation per headline</span></div>
+                        <div class="trx-row"><span class="trx-key">Inference mode</span><span class="trx-val">Explicitly display full vs fallback inference mode</span></div>
+                    </div>
+                </div>
+                <div class="agent-cta">
+                    <a class="agent-btn" href="/sentiment.html" aria-label="Open Sentiment Agent page">Open Sentiment Agent</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="agent-card">
+            <div class="agent-card-hd">
+                <span class="agent-num">6</span>
+                <div class="agent-titles">
+                    <h2>Module de reporting et visualisation</h2>
+                    <p class="subtitle">Reporting &amp; Visualization Module</p>
+                </div>
+            </div>
+            <div class="agent-body">
+                <div class="agent-section">
+                    <strong>R&ocirc;le</strong>
+                    Fournit des tableaux de bord en temps r&eacute;el et des rapports historiques pour les analystes.
+                </div>
+                <div class="agent-section">
+                    <strong>Contribution aux objectifs (BO)</strong>
+                    <div class="bo-tags">
+                        <span class="bo-tag">BO5 &mdash; transparence et aide &agrave; la d&eacute;cision</span>
+                    </div>
+                </div>
+                <div class="agent-section">
+                    <strong>Transparency Layer</strong>
+                    <div class="trx-box">
+                        <div class="trx-row"><span class="trx-key">Audit timeline</span><span class="trx-val">Log each recommendation with inputs and model version</span></div>
+                        <div class="trx-row"><span class="trx-key">Post-trade review</span><span class="trx-val">Compare predicted scenario vs realized move</span></div>
+                    </div>
+                </div>
+                <div class="agent-cta">
+                    <a class="agent-btn" href="/reporting.html" aria-label="Open Reporting dashboard">Open Reporting Dashboard</a>
+                    <a class="agent-btn" href="/market_comparison.html" aria-label="Open Market Comparison page">Open Market Comparison</a>
+                    <a class="agent-btn" href="/trader_guide.html" aria-label="Open Trader Guide page">Open Trader Guide</a>
+                    <a class="agent-btn" href="/copilot.html" aria-label="Open AI Copilot page">Open AI Copilot</a>
+                </div>
+            </div>
+        </article>
+
+    </div>
+</main>
+
+<script src="/shared.js"></script>
+<script src="/copilot_widget.js"></script>
+</body>
+</html>
