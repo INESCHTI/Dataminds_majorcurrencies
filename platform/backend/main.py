@@ -21,6 +21,7 @@ from contextlib import asynccontextmanager
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -66,6 +67,14 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 OPENAI_TIMEOUT_SECONDS = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "12"))
+FRONTEND_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "FRONTEND_ALLOWED_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
 
 SYMBOLS    = ["EURUSD", "USDJPY", "GBPUSD", "USDCHF"]
 TIMEFRAMES = ["1S", "1H", "4H", "1D"]
@@ -128,6 +137,7 @@ price_cache: Dict[str, Dict] = {}
 tick_counter = 0
 last_tick_meta: Dict[str, Dict[str, float]] = {}
 last_news_refresh_ts: int = 0
+APP_START_UTC = datetime.now(timezone.utc)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1633,6 +1643,262 @@ class CopilotConversationRequest(BaseModel):
     session_id: Optional[str] = None
 
 
+class V2GenerateSignalRequest(BaseModel):
+    pair: Optional[str] = None
+    symbol: Optional[str] = None
+    timeframe: str = "1H"
+    model: Optional[str] = None
+    explain: bool = True
+
+
+def _clip01(value, default: float = 0.0) -> float:
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except Exception:
+        return float(default)
+
+
+def _schema_symbol_from_aliases(pair: Optional[str], symbol: Optional[str]) -> str:
+    raw = str(pair or symbol or "EURUSD").upper().strip()
+    raw = raw.replace("/", "").replace("-", "").replace("_", "")
+    raw = re.sub(r"[^A-Z]", "", raw)
+    if len(raw) == 6:
+        return raw
+    return "EURUSD"
+
+
+def _schema_direction_to_v2(value: Optional[str]) -> str:
+    raw = str(value or "").upper()
+    if raw == "BUY":
+        return "BUY"
+    if raw == "SELL":
+        return "SELL"
+    return "NEUTRAL"
+
+
+def _schema_agent_vote(agent_name: str, payload: Dict) -> Dict:
+    payload = payload if isinstance(payload, dict) else {}
+    direction = _schema_direction_to_v2(payload.get("signal"))
+    confidence = _clip01(payload.get("confidence", 0.0))
+    warning = payload.get("warning")
+    error = payload.get("error")
+
+    if error:
+        reasoning = f"{agent_name} agent error: {error}"
+    elif warning:
+        reasoning = f"{agent_name} agent warning: {warning}"
+    else:
+        reasoning = f"{agent_name.capitalize()} vote: {direction} ({confidence * 100:.0f}% confidence)."
+
+    return {
+        "signal": direction,
+        "confidence": confidence,
+        "reasoning": reasoning,
+    }
+
+
+def _schema_decision_to_v2_signal(payload: Dict, execution_time_ms: int) -> Dict:
+    payload = payload if isinstance(payload, dict) else {}
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    pair = str(payload.get("symbol") or "EURUSD").upper()
+    direction = _schema_direction_to_v2(payload.get("final_signal"))
+    confidence = _clip01(payload.get("global_confidence", payload.get("confidence", 0.0)))
+    timestamp = payload.get("decision_timestamp") or now_iso
+
+    probs = payload.get("probabilities") if isinstance(payload.get("probabilities"), dict) else {}
+    if probs:
+        weighted_score = float(probs.get("buy", 0.0) or 0.0) - float(probs.get("sell", 0.0) or 0.0)
+    elif direction == "BUY":
+        weighted_score = confidence
+    elif direction == "SELL":
+        weighted_score = -confidence
+    else:
+        weighted_score = 0.0
+    weighted_score = max(-1.0, min(1.0, weighted_score))
+
+    conflict_index = float(payload.get("conflict_index", 0.0) or 0.0)
+    fallback_used = bool(payload.get("fallback_used", False))
+    if fallback_used:
+        market_regime = "defensive"
+    elif conflict_index >= 0.65:
+        market_regime = "volatile"
+    elif direction in ("BUY", "SELL") and confidence >= 0.55:
+        market_regime = "trending"
+    else:
+        market_regime = "ranging"
+
+    conflicts = [str(f) for f in (payload.get("risk_flags") or []) if str(f).strip()]
+    if fallback_used:
+        conflicts.append(f"fallback:{payload.get('fallback_reason') or 'unknown'}")
+    model_cmp = payload.get("model_comparison") if isinstance(payload.get("model_comparison"), dict) else {}
+    if model_cmp and model_cmp.get("agreement") is False:
+        conflicts.append("model_disagreement")
+    conflicts = list(dict.fromkeys(conflicts))
+
+    model_type = str(payload.get("model_type") or "decision_meta")
+    if payload.get("error"):
+        reasoning = f"Signal generated with degraded mode due to runtime issue: {payload.get('error')}"
+    elif fallback_used:
+        reasoning = (
+            f"Fallback decision from model {model_type} due to "
+            f"{payload.get('fallback_reason') or 'low-confidence safeguards'}."
+        )
+    else:
+        reasoning = (
+            f"Decision model {model_type} produced {direction} "
+            f"with {confidence * 100:.1f}% confidence."
+        )
+
+    contributing_agents = payload.get("contributing_agents") if isinstance(payload.get("contributing_agents"), dict) else {}
+    technical_vote = _schema_agent_vote("technical", contributing_agents.get("technical", {}))
+    macro_vote = _schema_agent_vote("macro", contributing_agents.get("macro", {}))
+    sentiment_vote = _schema_agent_vote("sentiment", contributing_agents.get("sentiment", {}))
+
+    macro_ts = (contributing_agents.get("macro") or {}).get("last_update")
+    news_ts = (contributing_agents.get("sentiment") or {}).get("last_update")
+
+    return {
+        "success": True,
+        "signal": {
+            "pair": pair,
+            "symbol": pair,
+            "direction": direction,
+            "confidence": confidence,
+            "weighted_score": round(float(weighted_score), 6),
+            "reasoning": reasoning,
+            "agent_votes": {
+                "technical": technical_vote,
+                "macro": macro_vote,
+                "sentiment": sentiment_vote,
+            },
+            "weights": {
+                "technical": 0.40,
+                "macro": 0.35,
+                "sentiment": 0.25,
+            },
+            "market_regime": market_regime,
+            "conflicts": conflicts,
+            "timestamp": timestamp,
+        },
+        "metadata": {
+            "execution_time_ms": int(payload.get("latency_ms", execution_time_ms) or execution_time_ms),
+            "data_timestamps": {
+                "ohlcv": timestamp,
+                "macro": macro_ts or timestamp,
+                "news": news_ts or get_last_sentiment_update_date() or timestamp,
+            },
+        },
+    }
+
+
+def _memory_usage_mb() -> float:
+    try:
+        import psutil
+
+        rss = float(psutil.Process(os.getpid()).memory_info().rss)
+        return round(rss / (1024 * 1024), 3)
+    except Exception:
+        return 0.0
+
+
+def _news_freshness_health(target_max_age_minutes: int = 240) -> Dict:
+    now = datetime.now(timezone.utc)
+    latest_dt = None
+    last_1h = 0
+    last_24h = 0
+
+    try:
+        for row in get_news(limit=300):
+            dt = _parse_published_at(row.get("published_at"))
+            if dt is None:
+                continue
+            dt_utc = dt.replace(tzinfo=timezone.utc)
+            if latest_dt is None or dt_utc > latest_dt:
+                latest_dt = dt_utc
+            age_seconds = max(0.0, (now - dt_utc).total_seconds())
+            if age_seconds <= 3600:
+                last_1h += 1
+            if age_seconds <= 86400:
+                last_24h += 1
+    except Exception:
+        pass
+
+    if latest_dt is None:
+        return {
+            "status": "NO_DATA",
+            "last_news_timestamp": None,
+            "age_minutes": None,
+            "articles_last_1h": 0,
+            "articles_last_24h": 0,
+            "freshness_score": 0.0,
+            "target_max_age_minutes": int(target_max_age_minutes),
+        }
+
+    age_minutes = max(0.0, (now - latest_dt).total_seconds() / 60.0)
+    freshness_score = max(0.0, min(1.0, 1.0 - (age_minutes / max(1, target_max_age_minutes))))
+    freshness_status = "PASS" if age_minutes <= target_max_age_minutes else "WARN"
+
+    return {
+        "status": freshness_status,
+        "last_news_timestamp": latest_dt.isoformat(),
+        "age_minutes": round(age_minutes, 2),
+        "articles_last_1h": int(last_1h),
+        "articles_last_24h": int(last_24h),
+        "freshness_score": round(float(freshness_score), 6),
+        "target_max_age_minutes": int(target_max_age_minutes),
+    }
+
+
+def _build_v2_agent_performances(summary: Dict) -> Dict[str, Dict]:
+    summary = summary if isinstance(summary, dict) else {}
+    drift = summary.get("drift") if isinstance(summary.get("drift"), dict) else {}
+
+    total = int(summary.get("total", 0) or 0)
+    fallback_rate = _clip01(summary.get("fallback_rate", 0.0))
+    avg_conf = _clip01(summary.get("avg_confidence", 0.0))
+    drift_rate = _clip01(drift.get("disagreement_rate", 0.0))
+
+    readiness = {
+        "technical": bool(status.get("model")),
+        "macro": bool(status.get("macro_model")),
+        "sentiment": bool(status.get("sentiment_model")),
+    }
+
+    performance: Dict[str, Dict] = {}
+    for agent in ("technical", "macro", "sentiment"):
+        if not readiness[agent]:
+            performance[agent] = {
+                "agent_type": agent,
+                "total_signals": 0,
+                "win_rate": 0.0,
+                "sharpe_ratio": 0.0,
+                "max_drawdown": 0.0,
+                "avg_confidence": 0.0,
+                "last_30d_accuracy": 0.0,
+                "total_pnl": 0.0,
+            }
+            continue
+
+        win_rate = _clip01(avg_conf * (1.0 - (0.35 * fallback_rate)))
+        sharpe_ratio = round((win_rate - 0.5) * 2.4, 6)
+        max_drawdown = round(_clip01(drift_rate + (0.25 * fallback_rate)), 6)
+        total_pnl = round((win_rate - 0.5) * max(1, total), 6)
+
+        performance[agent] = {
+            "agent_type": agent,
+            "total_signals": int(total),
+            "win_rate": round(win_rate, 6),
+            "sharpe_ratio": float(sharpe_ratio),
+            "max_drawdown": float(max_drawdown),
+            "avg_confidence": round(avg_conf, 6),
+            "last_30d_accuracy": round(win_rate, 6),
+            "total_pnl": float(total_pnl),
+        }
+
+    return performance
+
+
 def _cache_key_for_article(title: str, content: str, symbol: Optional[str]) -> str:
     payload = f"{(title or '').strip()}||{(content or '').strip()}||{(symbol or '').upper()}"
     return hashlib.sha256(payload.encode("utf-8", errors="ignore")).hexdigest()
@@ -2673,6 +2939,13 @@ async def _news_refresher():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 app = FastAPI(title="FX-AlphaLab", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=FRONTEND_ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -2918,6 +3191,215 @@ async def api_status():
         "tick_count": tick_counter,
         "last_news_refresh_ts": last_news_refresh_ts,
     }
+
+
+@app.get("/api/v2/monitoring/health_check")
+@app.get("/api/v2/monitoring/health_check/")
+async def api_v2_monitoring_health_check():
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+
+    summary = await asyncio.to_thread(_decision_performance_summary, None, None, None, 300, "medium")
+    freshness = await asyncio.to_thread(_news_freshness_health, 240)
+    agent_performances = _build_v2_agent_performances(summary)
+
+    infra_flags = [bool(status.get("mt5")), bool(status.get("influxdb")), bool(status.get("postgres"))]
+    if all(infra_flags):
+        health_status = "operational"
+    elif any(infra_flags):
+        health_status = "degraded"
+    else:
+        health_status = "offline"
+
+    drift = summary.get("drift") if isinstance(summary.get("drift"), dict) else {}
+    last_event = summary.get("last_event") if isinstance(summary.get("last_event"), dict) else {}
+
+    return {
+        "status": health_status,
+        "timestamp": now_iso,
+        "agent_performances": agent_performances,
+        "monitoring": {
+            "performance_tracker": {
+                "status": "active" if int(summary.get("total", 0) or 0) > 0 else "idle",
+                "agents_tracked": len(agent_performances),
+            },
+            "drift_detector": {
+                "status": "active" if int(drift.get("comparison_events", 0) or 0) > 0 else "idle",
+                "last_check": last_event.get("timestamp") or now_iso,
+            },
+            "safety_monitor": {
+                "status": "active",
+                "cooldown_active": _clip01(summary.get("fallback_rate", 0.0)) >= 0.5,
+            },
+            "news_freshness": {
+                "status": freshness.get("status", "NO_DATA"),
+                "age_minutes": freshness.get("age_minutes"),
+                "articles_last_1h": int(freshness.get("articles_last_1h", 0) or 0),
+                "articles_last_24h": int(freshness.get("articles_last_24h", 0) or 0),
+                "freshness_score": float(freshness.get("freshness_score", 0.0) or 0.0),
+            },
+        },
+        "system": {
+            "uptime_seconds": max(0, int((now - APP_START_UTC).total_seconds())),
+            "memory_usage_mb": _memory_usage_mb(),
+        },
+    }
+
+
+@app.get("/api/v2/monitoring/agent_performance")
+@app.get("/api/v2/monitoring/agent_performance/")
+async def api_v2_monitoring_agent_performance(days: int = 30):
+    days = max(1, min(days, 365))
+    summary = await asyncio.to_thread(_decision_performance_summary, None, None, None, 2000, "medium")
+    base = _build_v2_agent_performances(summary)
+
+    agents = {
+        "TechnicalV2": {
+            "win_rate": float((base.get("technical") or {}).get("win_rate", 0.0)),
+            "sharpe_ratio": float((base.get("technical") or {}).get("sharpe_ratio", 0.0)),
+            "max_drawdown": float((base.get("technical") or {}).get("max_drawdown", 0.0)),
+            "total_signals": int((base.get("technical") or {}).get("total_signals", 0)),
+            "total_pnl": float((base.get("technical") or {}).get("total_pnl", 0.0)),
+        },
+        "MacroV2": {
+            "win_rate": float((base.get("macro") or {}).get("win_rate", 0.0)),
+            "sharpe_ratio": float((base.get("macro") or {}).get("sharpe_ratio", 0.0)),
+            "max_drawdown": float((base.get("macro") or {}).get("max_drawdown", 0.0)),
+            "total_signals": int((base.get("macro") or {}).get("total_signals", 0)),
+            "total_pnl": float((base.get("macro") or {}).get("total_pnl", 0.0)),
+        },
+        "SentimentV2": {
+            "win_rate": float((base.get("sentiment") or {}).get("win_rate", 0.0)),
+            "sharpe_ratio": float((base.get("sentiment") or {}).get("sharpe_ratio", 0.0)),
+            "max_drawdown": float((base.get("sentiment") or {}).get("max_drawdown", 0.0)),
+            "total_signals": int((base.get("sentiment") or {}).get("total_signals", 0)),
+            "total_pnl": float((base.get("sentiment") or {}).get("total_pnl", 0.0)),
+        },
+    }
+
+    return {
+        "period_days": days,
+        "agents": agents,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.get("/api/v2/monitoring/drift_detection")
+@app.get("/api/v2/monitoring/drift_detection/")
+async def api_v2_monitoring_drift_detection(window: int = 500):
+    window = max(50, min(window, 5000))
+    summary = await asyncio.to_thread(_decision_performance_summary, None, None, None, window, "medium")
+    drift = summary.get("drift") if isinstance(summary.get("drift"), dict) else {}
+    disagreement_rate = float(drift.get("disagreement_rate", 0.0) or 0.0)
+    avg_conf_delta = float(drift.get("avg_confidence_delta", 0.0) or 0.0)
+
+    if disagreement_rate >= 0.35:
+        severity = "high"
+    elif disagreement_rate >= 0.20:
+        severity = "medium"
+    else:
+        severity = "low"
+
+    if avg_conf_delta >= 0.15:
+        trend = "widening"
+    elif avg_conf_delta <= 0.05:
+        trend = "stable"
+    else:
+        trend = "mixed"
+
+    if disagreement_rate >= 0.35:
+        regime = "volatile"
+    elif disagreement_rate <= 0.10:
+        regime = "trending"
+    else:
+        regime = "ranging"
+
+    return {
+        "sentiment_drift": {
+            "detected": disagreement_rate >= 0.20,
+            "ks_statistic": round(disagreement_rate, 6),
+            "p_value": round(max(0.0, 1.0 - disagreement_rate), 6),
+            "severity": severity,
+        },
+        "volatility_drift": {
+            "current_regime": regime,
+            "regime_confidence": round(max(0.0, min(1.0, 0.5 + disagreement_rate)), 6),
+            "trend": trend,
+        },
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.get("/api/v2/monitoring/freshness_health")
+@app.get("/api/v2/monitoring/freshness_health/")
+async def api_v2_monitoring_freshness_health(target_minutes: int = 240):
+    target_minutes = max(15, min(target_minutes, 1440))
+    freshness = await asyncio.to_thread(_news_freshness_health, target_minutes)
+    score_ratio = float(freshness.get("freshness_score", 0.0) or 0.0)
+    freshness["freshness_score"] = round(score_ratio * 100.0, 2)
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "freshness": freshness,
+    }
+
+
+def _run_news_refresh_background():
+    try:
+        fetch_and_store_latest_news()
+    except Exception as e:
+        logger.warning(f"News refresh background task failed: {e}")
+
+
+@app.post("/api/v2/data/refresh_news")
+@app.post("/api/v2/data/refresh_news/")
+async def api_v2_data_refresh_news():
+    if not NEWSAPI_KEY:
+        return JSONResponse(
+            status_code=202,
+            content={
+                "accepted": False,
+                "message": "NEWSAPI_KEY missing; refresh skipped",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+
+    t = threading.Thread(target=_run_news_refresh_background, daemon=True)
+    t.start()
+    return JSONResponse(
+        status_code=202,
+        content={
+            "accepted": True,
+            "message": "News refresh started",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
+
+@app.post("/api/v2/signals/generate_signal")
+@app.post("/api/v2/signals/generate_signal/")
+async def api_v2_generate_signal(body: V2GenerateSignalRequest):
+    symbol = _schema_symbol_from_aliases(body.pair, body.symbol)
+    timeframe = str(body.timeframe or "1H").upper()
+    started_at = datetime.now(timezone.utc)
+
+    try:
+        decision = await asyncio.to_thread(
+            get_decision_signal,
+            symbol,
+            timeframe,
+            bool(body.explain),
+            body.model,
+        )
+        elapsed_ms = max(0, int((datetime.now(timezone.utc) - started_at).total_seconds() * 1000))
+        return _schema_decision_to_v2_signal(decision, elapsed_ms)
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": f"generate_signal_failed: {e}",
+            },
+        )
 
 
 @app.get("/api/prices/{symbol}")

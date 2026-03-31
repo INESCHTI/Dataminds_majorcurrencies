@@ -30,6 +30,14 @@
         }
         html, body { min-height: 100%; background: var(--bg); }
         body { font-family: var(--font); color: var(--text); }
+        html.embed-mode .header,
+        html.embed-mode .top-nav {
+            display: none !important;
+        }
+        html.embed-mode .page {
+            max-width: none;
+            padding: 12px;
+        }
 
         .header {
             display: flex; align-items: center; justify-content: space-between;
@@ -172,6 +180,19 @@
             .agents-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <script>
+        (function () {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const embed = params.get('embed') === '1' || window.self !== window.top;
+                if (embed) {
+                    document.documentElement.classList.add('embed-mode');
+                }
+            } catch (e) {
+                // no-op
+            }
+        })();
+    </script>
 </head>
 <body>
 <header class="header">

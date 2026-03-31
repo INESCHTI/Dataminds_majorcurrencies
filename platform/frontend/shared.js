@@ -4,6 +4,18 @@
 (function () {
     var THEME_KEY = 'trady-theme';
     var DEFAULT_THEME = 'dark';
+    var isEmbedded = false;
+
+    try {
+        var embedParams = new URLSearchParams(window.location.search || '');
+        isEmbedded = embedParams.get('embed') === '1' || window.self !== window.top;
+    } catch (e) {
+        isEmbedded = false;
+    }
+
+    if (isEmbedded) {
+        document.documentElement.classList.add('embed-mode');
+    }
 
     function normalizeTheme(theme) {
         return theme === 'light' ? 'light' : 'dark';
@@ -40,7 +52,7 @@
         // Footer injection (skip on home page — it has overflow:hidden layout)
         var path = window.location.pathname;
         var isHome = path === '/' || path === '/index.html' || path === '';
-        if (!isHome) {
+        if (!isHome && !isEmbedded) {
             var footer = document.createElement('footer');
             footer.className = 'site-footer';
             footer.innerHTML =

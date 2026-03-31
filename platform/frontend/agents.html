@@ -32,6 +32,14 @@
             display: flex;
             flex-direction: column;
         }
+        html.embed-mode .header,
+        html.embed-mode .top-nav {
+            display: none !important;
+        }
+        html.embed-mode .page {
+            max-width: none;
+            padding: 12px;
+        }
 
         .header {
             display: flex; align-items: center; justify-content: space-between;
@@ -209,6 +217,19 @@
             border-color: rgba(68,136,255,0.5);
         }
     </style>
+    <script>
+        (function () {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const embed = params.get('embed') === '1' || window.self !== window.top;
+                if (embed) {
+                    document.documentElement.classList.add('embed-mode');
+                }
+            } catch (e) {
+                // no-op
+            }
+        })();
+    </script>
 </head>
 <body>
 

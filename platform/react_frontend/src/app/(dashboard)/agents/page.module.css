@@ -1,0 +1,215 @@
+.pageShell {
+    min-height: 100%;
+    background: #07090f;
+    color: #e2e8f5;
+}
+
+.page {
+    padding: 22px 20px 40px;
+    max-width: 920px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.pageHd {
+    margin-bottom: 22px;
+}
+
+.pageHd h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+}
+
+.pageHd p {
+    font-size: 13px;
+    color: #8899b0;
+    line-height: 1.55;
+    max-width: 720px;
+}
+
+.agentList {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.agentCard {
+    background: #0d1117;
+    border: 1px solid #161f2e;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+}
+
+.agentCard:hover {
+    border-color: #1e2d42;
+}
+
+.agentCardDecision {
+    border-color: rgba(68, 136, 255, 0.3);
+}
+
+.agentCardHd {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #161f2e;
+    background: rgba(17, 24, 35, 0.5);
+}
+
+.agentCardHdDecision {
+    background: linear-gradient(135deg, rgba(68, 136, 255, 0.08), rgba(0, 217, 163, 0.06));
+}
+
+.agentNum {
+    font-size: 12px;
+    font-weight: 700;
+    color: #4488ff;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(68, 136, 255, 0.08);
+    border: 1px solid rgba(68, 136, 255, 0.25);
+}
+
+.agentNumDecision {
+    background: linear-gradient(135deg, #4488ff, #00d9a3);
+    color: #fff;
+    border: none;
+}
+
+.agentTitles {
+    flex: 1;
+    min-width: 0;
+}
+
+.agentTitles h2 {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    font-size: 12px;
+    color: #8899b0;
+    font-weight: 500;
+}
+
+.agentBody {
+    padding: 14px 16px 16px;
+}
+
+.agentSection {
+    font-size: 12px;
+    color: #8899b0;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.agentSection:last-child {
+    margin-bottom: 0;
+}
+
+.agentSection strong {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #3d5066;
+    margin-bottom: 6px;
+}
+
+.boTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.boTag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0, 217, 163, 0.08);
+    color: #00d9a3;
+    border: 1px solid rgba(0, 217, 163, 0.2);
+}
+
+.agentCta {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.trxBox {
+    border: 1px solid #161f2e;
+    border-radius: 8px;
+    background: rgba(17, 24, 35, 0.45);
+    padding: 10px 12px;
+}
+
+.trxRow {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11px;
+    color: #8899b0;
+    padding: 3px 0;
+}
+
+.trxKey {
+    color: #3d5066;
+}
+
+.trxVal {
+    color: #e2e8f5;
+    text-align: right;
+}
+
+.agentBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    color: #4488ff;
+    background: rgba(68, 136, 255, 0.08);
+    border: 1px solid rgba(68, 136, 255, 0.35);
+    border-radius: 6px;
+    padding: 8px 12px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.agentBtn:hover {
+    color: #b9d1ff;
+    background: rgba(68, 136, 255, 0.14);
+    border-color: rgba(68, 136, 255, 0.5);
+}
+
+@media (max-width: 900px) {
+    .page {
+        padding: 16px;
+    }
+
+    .trxRow {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .trxVal {
+        text-align: left;
+    }
+}

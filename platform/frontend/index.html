@@ -36,6 +36,13 @@
             display: grid;
             grid-template-rows: 52px 78px 1fr;
         }
+        html.embed-mode body {
+            grid-template-rows: 78px 1fr;
+        }
+        html.embed-mode .header,
+        html.embed-mode .top-nav {
+            display: none !important;
+        }
 
         /* ═══ HEADER ═══ */
         .header {
@@ -370,6 +377,19 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
+    <script>
+        (function () {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const embed = params.get('embed') === '1' || window.self !== window.top;
+                if (embed) {
+                    document.documentElement.classList.add('embed-mode');
+                }
+            } catch (e) {
+                // no-op
+            }
+        })();
+    </script>
 </head>
 <body>
 

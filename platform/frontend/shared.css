@@ -31,6 +31,18 @@ html[data-theme="light"] {
     --amber:     #d49300;
 }
 
+/* ═══ EMBED MODE (for React dashboard iframes) ═══ */
+html.embed-mode .header,
+html.embed-mode .top-nav,
+html.embed-mode .site-footer {
+    display: none !important;
+}
+
+html.embed-mode .page {
+    max-width: none !important;
+    padding: 12px !important;
+}
+
 /* Body background: override hardcoded gradients in light mode */
 html[data-theme="light"] body {
     background: var(--bg, #f4f6fa) !important;
