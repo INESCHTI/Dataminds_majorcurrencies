@@ -1,0 +1,11 @@
+{
+  "signal": "Buy",
+  "confidence": 0.75,
+  "reasoning": "Strong uptrend on the daily chart with bullish candlestick patterns and RSI divergence on the hourly chart.",
+  "entry_zone": "On a break above the upper Bollinger Band resistance level",
+  "stop_loss": "-0.015",
+  "take_profit": "+0.02",
+  "symbol": "EURUSD",
+  "timestamp": "2026-03-24T11:58:32.276825",
+  "agent": "technical"
+}

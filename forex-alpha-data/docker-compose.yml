@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:2.7
+    container_name: forex-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=forexalpha2026
+      - DOCKER_INFLUXDB_INIT_ORG=forexalpha
+      - DOCKER_INFLUXDB_INIT_BUCKET=forex_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=vQhWbji661cyV3YnWacBs31KOKl-NS2Y12pTtt2GpEi6qoem5_l_WDx0nYhMcc--Ea8OqC2s-prfjj678NrTUA==
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: forex-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=forex_metadata
+      - POSTGRES_USER=forex_user
+      - POSTGRES_PASSWORD=forex_pass_2026
+      - POSTGRES_HOST_AUTH_METHOD=md5   
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+volumes:
+  influxdb_data:
+  postgres_data:

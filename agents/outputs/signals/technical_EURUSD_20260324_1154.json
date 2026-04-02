@@ -1,0 +1,11 @@
+{
+  "signal": "SHORT",
+  "confidence": "LOW",
+  "reasoning": "Bearish multi-timeframe analysis, lack of bullish technical indicators, and absence of chart patterns.",
+  "entry_zone": "Wait for confirmation before entering the market.",
+  "stop_loss": "-50 pips from entry price",
+  "take_profit": "+87.8 pips (R1) or +88.9 pips (S1)",
+  "symbol": "EURUSD",
+  "timestamp": "2026-03-24T11:54:16.576772",
+  "agent": "technical"
+}

@@ -1,0 +1,21 @@
+# executables
+*.exe
+
+# node
+node_modules/
+
+# python
+__pycache__/
+*.pyc
+
+# env
+.env
+.venv/
+venv/
+
+# logs
+*.log
+
+# build
+dist/
+build/

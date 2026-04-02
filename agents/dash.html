@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forex Alpha Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --panel-2: #172238;
+      --text: #e6eefc;
+      --muted: #9fb0d1;
+      --accent: #4f8cff;
+      --good: #24c97c;
+      --warn: #f5b942;
+      --bad: #ff6b6b;
+      --border: #25324d;
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #09101d 0%, #0d1526 100%);
+      color: var(--text);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: rgba(11,18,32,.9);
+      border-right: 1px solid var(--border);
+      padding: 22px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #67e8f9);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 700;
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav-title {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin: 18px 0 10px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid transparent;
+      padding: 12px 14px;
+      border-radius: 12px;
+      text-align: left;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: .2s ease;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      background: var(--panel);
+      border-color: var(--border);
+    }
+
+    .main {
+      padding: 26px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .title-block h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .title-block p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input, select, button {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      padding: 11px 14px;
+      font-size: 14px;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button.primary:hover {
+      filter: brightness(1.05);
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(23,34,56,.96), rgba(18,26,43,.96));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .metric-value {
+      font-size: 30px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .metric-sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .status-good { color: var(--good); }
+    .status-warn { color: var(--warn); }
+    .status-bad { color: var(--bad); }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      background: rgba(255,255,255,.02);
+      position: sticky;
+      top: 0;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 10px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .kv .key { color: var(--muted); }
+
+    .chart-box {
+      width: 100%;
+      height: 320px;
+      position: relative;
+      border-radius: 16px;
+      background: rgba(255,255,255,.01);
+      border: 1px dashed rgba(255,255,255,.06);
+      padding: 8px;
+    }
+
+    .hidden { display: none; }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .reason {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .span-3, .span-4, .span-6, .span-8, .span-12 { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">FX</div>
+        <div>
+          <h1>Forex Alpha</h1>
+          <p>Dashboard PostgreSQL + MT5 + InfluxDB</p>
+        </div>
+      </div>
+
+      <div class="nav-title">Navigation</div>
+      <button class="nav-btn active" data-view="overview">Vue d’ensemble</button>
+      <button class="nav-btn" data-view="market">Marché (MT5 / InfluxDB)</button>
+      <button class="nav-btn" data-view="macro">Macro (PostgreSQL)</button>
+      <button class="nav-btn" data-view="news">News (PostgreSQL)</button>
+      <button class="nav-btn" data-view="events">Événements économiques</button>
+      <button class="nav-btn" data-view="signal">Signal & synthèse</button>
+
+      <div class="nav-title">API</div>
+      <div class="small">
+        <div id="apiBaseLabel">http://localhost:8000</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="title-block">
+          <h2>Forex Alpha Dashboard</h2>
+          <p>Visualisation unifiée des données réelles MT5, InfluxDB et PostgreSQL.</p>
+        </div>
+
+        <div class="toolbar">
+          <select id="symbolSelect">
+            <option>EURUSD</option>
+            <option>USDJPY</option>
+            <option>GBPUSD</option>
+            <option>USDCHF</option>
+          </select>
+          <select id="tfSelect">
+            <option>1H</option>
+            <option>4H</option>
+            <option>1D</option>
+          </select>
+          <button class="primary" id="refreshBtn">Actualiser</button>
+        </div>
+      </div>
+
+      <section id="overview" class="view">
+        <div class="grid">
+          <div class="card span-3">
+            <div class="metric-label">Prix actuel</div>
+            <div class="metric-value" id="metricPrice">--</div>
+            <div class="metric-sub" id="metricPair">EURUSD • 1H</div>
+          </div>
+
+          <div class="card span-3">
+            <div class="metric-label">Variation</div>
+            <div class="metric-value" id="metricChange">--</div>
+            <div class="metric-sub">Dernier point vs précédent</div>
+          </div>
+
+          <div class="card span-3">
+            <div class="metric-label">Signal</div>
+            <div class="metric-value" id="metricSignal">--</div>
+            <div class="metric-sub">BUY / SELL / HOLD</div>
+          </div>
+
+          <div class="card span-3">
+            <div class="metric-label">Confiance</div>
+            <div class="metric-value" id="metricConfidence">--</div>
+            <div class="metric-sub">Score de décision</div>
+          </div>
+
+          <div class="card span-8">
+            <div class="section-title">
+              <h3>Évolution du prix</h3>
+              <span class="badge">InfluxDB / MT5</span>
+            </div>
+            <div class="chart-box">
+              <canvas id="priceChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card span-4">
+            <div class="section-title">
+              <h3>Résumé système</h3>
+              <span class="badge" id="systemStatus">Chargement…</span>
+            </div>
+            <div class="kv"><div class="key">Source marché</div><div id="srcMarket">--</div></div>
+            <div class="kv"><div class="key">Source macro</div><div id="srcMacro">--</div></div>
+            <div class="kv"><div class="key">News</div><div id="srcNews">--</div></div>
+            <div class="kv"><div class="key">Événements</div><div id="srcEvents">--</div></div>
+            <div class="kv"><div class="key">Dernière mise à jour</div><div id="lastUpdate">--</div></div>
+          </div>
+
+          <div class="card span-6">
+            <div class="section-title">
+              <h3>Dernières news</h3>
+              <span class="badge">PostgreSQL</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Titre</th><th>Sentiment</th></tr>
+                </thead>
+                <tbody id="newsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card span-6">
+            <div class="section-title">
+              <h3>Événements économiques</h3>
+              <span class="badge">PostgreSQL</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Devise</th><th>Impact</th><th>Événement</th></tr>
+                </thead>
+                <tbody id="eventsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="market" class="view hidden">
+        <div class="grid">
+          <div class="card span-8">
+            <div class="section-title">
+              <h3>Données marché</h3>
+              <span class="badge">MT5 / InfluxDB</span>
+            </div>
+            <div class="chart-box">
+              <canvas id="marketChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card span-4">
+            <div class="section-title">
+              <h3>Indicateurs rapides</h3>
+              <span class="badge">Dernière bougie</span>
+            </div>
+            <div class="kv"><div class="key">Open</div><div id="mOpen">--</div></div>
+            <div class="kv"><div class="key">High</div><div id="mHigh">--</div></div>
+            <div class="kv"><div class="key">Low</div><div id="mLow">--</div></div>
+            <div class="kv"><div class="key">Close</div><div id="mClose">--</div></div>
+            <div class="kv"><div class="key">Volume</div><div id="mVolume">--</div></div>
+          </div>
+
+          <div class="card span-12">
+            <div class="section-title">
+              <h3>Historique marché</h3>
+              <span class="badge">Temps réel</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Time</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr>
+                </thead>
+                <tbody id="marketTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="macro" class="view hidden">
+        <div class="grid">
+          <div class="card span-12">
+            <div class="section-title">
+              <h3>Indicateurs macro</h3>
+              <span class="badge">PostgreSQL</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Pays</th><th>Indicateur</th><th>Valeur</th><th>Source</th></tr>
+                </thead>
+                <tbody id="macroTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="news" class="view hidden">
+        <div class="grid">
+          <div class="card span-12">
+            <div class="section-title">
+              <h3>Articles & sentiment</h3>
+              <span class="badge">PostgreSQL</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Source</th><th>Titre</th><th>Sentiment</th><th>Devise</th></tr>
+                </thead>
+                <tbody id="newsFullTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="events" class="view hidden">
+        <div class="grid">
+          <div class="card span-12">
+            <div class="section-title">
+              <h3>Calendrier économique</h3>
+              <span class="badge">PostgreSQL</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Date</th><th>Devise</th><th>Impact</th><th>Expected</th><th>Actual</th><th>Événement</th></tr>
+                </thead>
+                <tbody id="eventsFullTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="signal" class="view hidden">
+        <div class="grid">
+          <div class="card span-4">
+            <div class="section-title">
+              <h3>Signal actuel</h3>
+              <span class="badge">Synthèse</span>
+            </div>
+            <div class="metric-value" id="signalValue">--</div>
+            <div class="metric-sub" id="signalMeta">--</div>
+          </div>
+
+          <div class="card span-8">
+            <div class="section-title">
+              <h3>Raisons du signal</h3>
+              <span class="badge">Explainability</span>
+            </div>
+            <div id="signalReasons">Chargement...</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+
+    document.getElementById("apiBaseLabel").textContent = API_BASE;
+
+    const state = {
+      symbol: "EURUSD",
+      tf: "1H"
+    };
+
+    const fallbackData = {
+      overview: {
+        market_source: "MT5 via InfluxDB",
+        macro_source: "PostgreSQL",
+        news_source: "PostgreSQL",
+        events_source: "PostgreSQL",
+        last_update: new Date().toISOString(),
+        system_status: "warning"
+      },
+      prices: [
+        { time: "2026-03-24T08:00:00Z", open: 1.0810, high: 1.0820, low: 1.0802, close: 1.0817, volume: 1200 },
+        { time: "2026-03-24T09:00:00Z", open: 1.0817, high: 1.0831, low: 1.0812, close: 1.0828, volume: 1600 },
+        { time: "2026-03-24T10:00:00Z", open: 1.0828, high: 1.0842, low: 1.0820, close: 1.0835, volume: 1800 },
+        { time: "2026-03-24T11:00:00Z", open: 1.0835, high: 1.0840, low: 1.0829, close: 1.0831, volume: 1400 },
+        { time: "2026-03-24T12:00:00Z", open: 1.0831, high: 1.0846, low: 1.0828, close: 1.0842, volume: 1900 }
+      ],
+      macro: [
+        { date: "2026-03-20", country: "US", indicator_name: "CPI", value: "3.2", source: "FRED" },
+        { date: "2026-03-20", country: "EU", indicator_name: "ECB Rate", value: "4.00", source: "ECB" }
+      ],
+      news: [
+        { published_at: "2026-03-24 10:15", source: "FXStreet", title: "Dollar supported by rate expectations", sentiment_score: 0.64, currency_tag: "USD" },
+        { published_at: "2026-03-24 09:10", source: "Reuters", title: "Euro steady ahead of ECB remarks", sentiment_score: 0.15, currency_tag: "EUR" }
+      ],
+      events: [
+        { event_date: "2026-03-24 13:30", currency: "USD", impact: "High", expected: "2.1", actual: "-", event_name: "Core Durable Goods" },
+        { event_date: "2026-03-24 15:00", currency: "EUR", impact: "Medium", expected: "-", actual: "-", event_name: "ECB Speech" }
+      ],
+      signal: {
+        signal: "HOLD",
+        confidence: 0.50,
+        reasons: [
+          "Mode démonstration : l'API ne répond pas encore.",
+          "Vérifie que FastAPI est bien lancé sur localhost:8000."
+        ]
+      }
+    };
+
+    function buildEndpoints() {
+      return {
+        overview: `${API_BASE}/api/overview`,
+        prices: (symbol, tf) => `${API_BASE}/api/prices?symbol=${encodeURIComponent(symbol)}&tf=${encodeURIComponent(tf)}&limit=100`,
+        macro: `${API_BASE}/api/macro?limit=100`,
+        news: `${API_BASE}/api/news?limit=50`,
+        events: `${API_BASE}/api/events?limit=50`,
+        signal: (symbol, tf) => `${API_BASE}/api/signal/latest?symbol=${encodeURIComponent(symbol)}&tf=${encodeURIComponent(tf)}`
+      };
+    }
+
+    let priceChartInstance = null;
+    let marketChartInstance = null;
+
+    async function getJson(url, fallback) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        console.warn("Fallback utilisé pour:", url, e);
+        return fallback;
+      }
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function statusClass(status) {
+      if (status === "online") return "status-good";
+      if (status === "warning") return "status-warn";
+      return "status-bad";
+    }
+
+    function renderTableBody(bodyId, rows, columns) {
+      const body = document.getElementById(bodyId);
+      body.innerHTML = rows.map(row => `
+        <tr>${columns.map(c => `<td>${row[c] ?? ""}</td>`).join("")}</tr>
+      `).join("");
+    }
+
+    function destroyChart(instance) {
+      if (instance) instance.destroy();
+    }
+
+    function drawRealChart(canvasId, values, labels, title) {
+      const ctx = document.getElementById(canvasId).getContext("2d");
+
+      if (canvasId === "priceChart") {
+        destroyChart(priceChartInstance);
+      } else {
+        destroyChart(marketChartInstance);
+      }
+
+      const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: title,
+            data: values,
+            borderWidth: 2,
+            tension: 0.25,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 8
+              }
+            },
+            y: {
+              beginAtZero: false
+            }
+          }
+        }
+      });
+
+      if (canvasId === "priceChart") {
+        priceChartInstance = chart;
+      } else {
+        marketChartInstance = chart;
+      }
+    }
+
+    async function loadDashboard() {
+      const endpoints = buildEndpoints();
+
+      const [overview, pricesRaw, macroRaw, newsRaw, eventsRaw, signalRaw] = await Promise.all([
+        getJson(endpoints.overview, fallbackData.overview),
+        getJson(endpoints.prices(state.symbol, state.tf), fallbackData.prices),
+        getJson(endpoints.macro, fallbackData.macro),
+        getJson(endpoints.news, fallbackData.news),
+        getJson(endpoints.events, fallbackData.events),
+        getJson(endpoints.signal(state.symbol, state.tf), fallbackData.signal)
+      ]);
+
+      const priceRows = Array.isArray(pricesRaw) ? pricesRaw : (pricesRaw.data || []);
+      const macroRows = Array.isArray(macroRaw) ? macroRaw : (macroRaw.data || []);
+      const newsRows = Array.isArray(newsRaw) ? newsRaw : (newsRaw.data || []);
+      const eventRows = Array.isArray(eventsRaw) ? eventsRaw : (eventsRaw.data || []);
+      const signalObj = signalRaw.data || signalRaw;
+
+      const last = priceRows[priceRows.length - 1] || {};
+      const prev = priceRows[priceRows.length - 2] || last;
+      const change = (last.close != null && prev.close != null) ? (Number(last.close) - Number(prev.close)) : null;
+
+      setText("metricPrice", last.close != null ? Number(last.close).toFixed(4) : "--");
+      setText("metricPair", `${state.symbol} • ${state.tf}`);
+      setText("metricChange", change != null ? `${change >= 0 ? "+" : ""}${change.toFixed(4)}` : "--");
+      setText("metricSignal", signalObj.signal || "--");
+      setText("metricConfidence", signalObj.confidence != null ? `${Math.round(Number(signalObj.confidence) * 100)}%` : "--");
+
+      setText("srcMarket", overview.market_source || "MT5 / InfluxDB");
+      setText("srcMacro", overview.macro_source || "PostgreSQL");
+      setText("srcNews", overview.news_source || "PostgreSQL");
+      setText("srcEvents", overview.events_source || "PostgreSQL");
+      setText("lastUpdate", overview.last_update || "--");
+
+      const badge = document.getElementById("systemStatus");
+      badge.textContent = overview.system_status || "unknown";
+      badge.className = `badge ${statusClass(overview.system_status)}`;
+
+      setText("mOpen", last.open != null ? Number(last.open).toFixed(4) : "--");
+      setText("mHigh", last.high != null ? Number(last.high).toFixed(4) : "--");
+      setText("mLow", last.low != null ? Number(last.low).toFixed(4) : "--");
+      setText("mClose", last.close != null ? Number(last.close).toFixed(4) : "--");
+      setText("mVolume", last.volume != null ? String(last.volume) : "--");
+
+      renderTableBody("marketTableBody", priceRows.slice().reverse(), ["time", "open", "high", "low", "close", "volume"]);
+      renderTableBody("macroTableBody", macroRows, ["date", "country", "indicator_name", "value", "source"]);
+      renderTableBody("newsTableBody", newsRows.slice(0, 5), ["published_at", "title", "sentiment_score"]);
+      renderTableBody("newsFullTableBody", newsRows, ["published_at", "source", "title", "sentiment_score", "currency_tag"]);
+      renderTableBody("eventsTableBody", eventRows.slice(0, 5), ["event_date", "currency", "impact", "event_name"]);
+      renderTableBody("eventsFullTableBody", eventRows, ["event_date", "currency", "impact", "expected", "actual", "event_name"]);
+
+      setText("signalValue", signalObj.signal || "--");
+      setText("signalMeta", signalObj.confidence != null ? `Confiance: ${Math.round(Number(signalObj.confidence) * 100)}%` : "--");
+
+      const reasonsBox = document.getElementById("signalReasons");
+      reasonsBox.innerHTML = (signalObj.reasons || [])
+        .map(r => `<div class="reason">${r}</div>`)
+        .join("") || "Aucune raison disponible";
+
+      const labels = priceRows.map(r => {
+        const t = r.time || "";
+        return t.includes("T") ? t.substring(11, 16) : t;
+      });
+      const values = priceRows.map(r => Number(r.close)).filter(v => !Number.isNaN(v));
+
+      if (values.length > 0) {
+        drawRealChart("priceChart", values, labels, `${state.symbol} ${state.tf}`);
+        drawRealChart("marketChart", values, labels, `${state.symbol} ${state.tf}`);
+      }
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const view = btn.dataset.view;
+        document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+        document.getElementById(view).classList.remove("hidden");
+      });
+    });
+
+    document.getElementById("symbolSelect").addEventListener("change", e => {
+      state.symbol = e.target.value;
+      loadDashboard();
+    });
+
+    document.getElementById("tfSelect").addEventListener("change", e => {
+      state.tf = e.target.value;
+      loadDashboard();
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("refreshBtn");
+      btn.disabled = true;
+      btn.textContent = "Actualisation...";
+      try {
+        await loadDashboard();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Actualiser";
+      }
+    });
+
+    setInterval(() => {
+      loadDashboard();
+    }, 10000);
+
+    loadDashboard();
+  </script>
+</body>
+</html>

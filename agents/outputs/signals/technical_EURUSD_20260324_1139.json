@@ -1,0 +1,11 @@
+{
+  "signal": "SHORT",
+  "confidence": "MEDIUM",
+  "reasoning": "Bearish multi-timeframe analysis, lack of bullish technical indicators, and absence of a significant chart pattern.",
+  "entry_zone": "Current price or near support levels (1.15265 or 1.14399)",
+  "stop_loss": "Above the nearest resistance level (e.g., 1.17032)",
+  "take_profit": "The next support level below the current price (e.g., 1.15265)",
+  "symbol": "EURUSD",
+  "timestamp": "2026-03-24T11:39:54.341315",
+  "agent": "technical"
+}

@@ -1,0 +1,11 @@
+{
+  "signal": "SHORT",
+  "confidence": "MEDIUM",
+  "reasoning": "Bearish indicators on the 1H timeframe and expanded Bollinger Bands.",
+  "entry_zone": "Lower band of the Bollinger Bands",
+  "stop_loss": "Entry price + ATR (Average True Range) value",
+  "take_profit": "Price at the lower resistance level (1.17032)",
+  "symbol": "EURUSD",
+  "timestamp": "2026-03-24T11:19:17.598220",
+  "agent": "technical"
+}
