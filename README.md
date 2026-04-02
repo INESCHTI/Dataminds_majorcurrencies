@@ -1,1 +1,2 @@
-# Pi_zmjorcurrencies
+# FX Alpha Platform — AI-Powered Multi-Agent Forex Trading
+
