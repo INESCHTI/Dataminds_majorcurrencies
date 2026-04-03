@@ -229,10 +229,10 @@ def add_candlestick_patterns(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_technical_features(symbol: str, timeframe: str = "1H") -> pd.DataFrame:
     """Pipeline complète des features techniques."""
-    print(f"\n🔧 [TECHNICAL] Building features for {symbol} {timeframe}...")
+    print(f"\n[TECHNICAL] Building features for {symbol} {timeframe}...")
     df = load_ohlc(symbol, timeframe)
     if df.empty:
-        print(f"   ⚠️ No data for {symbol}")
+        print(f"   [WARN] No data for {symbol}")
         return pd.DataFrame()
 
     df = add_returns(df)
@@ -249,7 +249,7 @@ def build_technical_features(symbol: str, timeframe: str = "1H") -> pd.DataFrame
     df["target"] = (df["close"].shift(-4) > df["close"]).astype(int)
 
     df["symbol"] = symbol
-    print(f"   ✅ {len(df)} rows | {df.shape[1]} features")
+    print(f"   [OK] {len(df)} rows | {df.shape[1]} features")
     return df
 
 
@@ -262,10 +262,10 @@ def build_macro_features(df_price: pd.DataFrame) -> pd.DataFrame:
     Aligne les indicateurs macro sur le timeframe du prix.
     Forward-fill car les données macro sont basse fréquence (mensuel/hebdo).
     """
-    print("\n📈 [MACRO] Building macro features...")
+    print("\n[MACRO] Building macro features...")
     macro = load_macro()
     if macro.empty:
-        print("   ⚠️ No macro data")
+        print("   [WARN] No macro data")
         return df_price
 
     # Harmonisation timezone avant reindex
@@ -310,7 +310,7 @@ def build_macro_features(df_price: pd.DataFrame) -> pd.DataFrame:
 
     # Merge avec le prix
     df_merged = df_price.join(macro_aligned, how="left")
-    print(f"   ✅ Added {macro_aligned.shape[1]} macro features")
+    print(f"   [OK] Added {macro_aligned.shape[1]} macro features")
     return df_merged
 
 
@@ -345,10 +345,10 @@ def build_sentiment_features(df_price: pd.DataFrame, symbol: str) -> pd.DataFram
     Calcule les features de sentiment et les aligne sur le prix.
     Le symbole sert à filtrer les news pertinentes (ex: EUR pour EURUSD).
     """
-    print(f"\n💬 [SENTIMENT] Building sentiment features for {symbol}...")
+    print(f"\n[SENTIMENT] Building sentiment features for {symbol}...")
     news = load_news(days=90)
     if news.empty:
-        print("   ⚠️ No news data")
+        print("   [WARN] No news data")
         return df_price
 
     # Filtre par devise pertinente
@@ -369,7 +369,7 @@ def build_sentiment_features(df_price: pd.DataFrame, symbol: str) -> pd.DataFram
     news = news[news["is_relevant"]].copy()
 
     if news.empty:
-        print(f"   ⚠️ No relevant news for {symbol}")
+        print(f"   [WARN] No relevant news for {symbol}")
         return df_price
 
     # Score de sentiment par article
@@ -402,7 +402,7 @@ def build_sentiment_features(df_price: pd.DataFrame, symbol: str) -> pd.DataFram
     sent_aligned = sent_df.reindex(df_price.index, method="ffill").fillna(0)
     df_merged    = df_price.join(sent_aligned, how="left")
 
-    print(f"   ✅ Added {sent_df.shape[1]} sentiment features")
+    print(f"   [OK] Added {sent_df.shape[1]} sentiment features")
     return df_merged
 
 
@@ -416,7 +416,7 @@ def build_full_feature_matrix(symbol: str, timeframe: str = "1H") -> pd.DataFram
     Combine : Technique + Macro + Sentiment
     """
     print(f"\n{'='*55}")
-    print(f"  FEATURE ENGINEERING — {symbol} {timeframe}")
+    print(f"  FEATURE ENGINEERING - {symbol} {timeframe}")
     print(f"{'='*55}")
 
     # 1. Features techniques (base)
@@ -438,10 +438,10 @@ def build_full_feature_matrix(symbol: str, timeframe: str = "1H") -> pd.DataFram
     df.ffill(inplace=True)
     df.fillna(0, inplace=True)
 
-    print(f"\n✅ Feature matrix built:")
+    print(f"\n[OK] Feature matrix built:")
     print(f"   Rows    : {len(df):,}")
     print(f"   Features: {df.shape[1] - 2}")  # -2 : symbol + target
-    print(f"   Period  : {df.index.min()} → {df.index.max()}")
+    print(f"   Period  : {df.index.min()} -> {df.index.max()}")
     print(f"   Target  : BUY={df['target'].sum():,} | SELL={(df['target']==0).sum():,}")
 
     return df
@@ -458,7 +458,7 @@ def build_all_pairs(timeframe: str = "1H") -> dict:
             path = f"features/{symbol}_{timeframe}_features.csv"
             os.makedirs("features", exist_ok=True)
             df.to_csv(path)
-            print(f"   💾 Saved to {path}")
+            print(f"   Saved to {path}")
     return all_features
 
 
@@ -478,7 +478,7 @@ if __name__ == "__main__":
     print(f"  SUMMARY")
     print(f"{'='*55}")
     for symbol, df in features.items():
-        print(f"  {symbol}: {len(df):,} rows × {df.shape[1]} features")
+        print(f"  {symbol}: {len(df):,} rows x {df.shape[1]} features")
 
     INFLUX_CLIENT.close()
-    print("\n✅ Feature Engineering Complete!")
+    print("\n[OK] Feature Engineering Complete!")

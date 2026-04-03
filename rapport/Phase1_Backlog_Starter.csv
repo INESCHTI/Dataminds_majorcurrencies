@@ -1,0 +1,13 @@
+id,title,description,owner,priority,phase,estimate_days,acceptance_criteria,status
+P1-001,Workshop de cadrage,Organiser atelier de cadrage initial et valider scope 4 paires,PO,P0,Phase1,1,Objectifs SMART valides et comptes rendus publies,Todo
+P1-002,Formalisation KPI,Definir KPI trading systeme agents et couts,DS Lead,P0,Phase1,1,Seuils et methodes de calcul documentes,Todo
+P1-003,Objectifs Data Science,Mapper objectifs business vers problemes ML/NLP/TS,DS Lead,P0,Phase1,2,Matrice problemes modeles metriques approuvee,Todo
+P1-004,Analyse domaine Forex,Documenter sessions volatilite correlations et evenements,Financial Analyst,P1,Phase1,2,Document domaine valide par DS Lead,Todo
+P1-005,Contraintes techniques,Definir contraintes latence dispo budget et scalabilite,ML Engineer,P0,Phase1,1,Matrice contraintes P0/P1/P2 avec mitigation,Todo
+P1-006,Contraintes legales,Produire disclaimer et limites d usage du systeme,PO,P0,Phase1,1,Disclaimer approuve et ajoute a la doc,Todo
+P1-007,Etat de l art,Comparer frameworks agents modeles TS/NLP et serving,DS Team,P1,Phase1,2,Choix techno justifies par benchmark,Todo
+P1-008,Architecture v1,Definir architecture 5 couches et contrats interfaces,DS Lead,P0,Phase1,3,Architecture review validee,Todo
+P1-009,Backlog phases 2-4,Ecrire user stories priorisees MoSCoW,PO,P0,Phase1,2,Backlog priorise et estime disponible,Todo
+P1-010,Plan release,Produire planning jalons dependances et risques,PO,P1,Phase1,1,Gantt et registre risques publies,Todo
+P1-011,Readiness environnement,Verifier stack locale CI et acces equipe,Data Engineer,P0,Phase1,2,Onboarding dev reproductible en moins de 60 min,Todo
+P1-012,Revue fin de phase,Presenter livrables et obtenir go/no-go,PO,P0,Phase1,1,Decision go/no-go enregistree,Todo

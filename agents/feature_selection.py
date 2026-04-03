@@ -71,10 +71,10 @@ FEATURE_FAMILIES = {
 def load_features(symbol: str, timeframe: str = "1H") -> pd.DataFrame:
     path = f"features/{symbol}_{timeframe}_features.csv"
     if not os.path.exists(path):
-        print(f"   ⚠️ File not found: {path}")
+        print(f"   [WARN] File not found: {path}")
         return pd.DataFrame()
     df = pd.read_csv(path, index_col=0, parse_dates=True)
-    print(f"   ✅ Loaded {symbol}: {df.shape[0]:,} rows × {df.shape[1]} cols")
+    print(f"   [OK] Loaded {symbol}: {df.shape[0]:,} rows x {df.shape[1]} cols")
     return df
 
 
@@ -95,7 +95,7 @@ def save_plot(fig, name: str):
     path = f"outputs/feature_selection/{name}.png"
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"   💾 Saved plot → {path}")
+    print(f"   Saved plot -> {path}")
 
 
 # ─────────────────────────────────────────
@@ -107,7 +107,7 @@ def step1_variance_filter(df: pd.DataFrame, feature_cols: list) -> list:
     Supprime les features quasi-constantes.
     Une feature avec variance < seuil n'apporte aucune information.
     """
-    print("\n📊 Step 1 — Variance Filter")
+    print("\nStep 1 - Variance Filter")
     X = df[feature_cols].fillna(0)
 
     selector = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
@@ -134,7 +134,7 @@ def step2_correlation_filter(df: pd.DataFrame, feature_cols: list) -> list:
     Supprime les features très corrélées entre elles (multicolinéarité).
     Garde une feature par groupe corrélé (celle avec variance max).
     """
-    print("\n🔗 Step 2 — Correlation Filter")
+    print("\nStep 2 - Correlation Filter")
     X   = df[feature_cols].fillna(0)
     cor = X.corr().abs()
 
@@ -175,7 +175,7 @@ def step3_rf_importance(df: pd.DataFrame, feature_cols: list, symbol: str) -> li
     Entraîne un Random Forest rapide pour estimer l'importance des features.
     Garde les TOP_N_FEATURES les plus importantes.
     """
-    print(f"\n🌲 Step 3 — Random Forest Feature Importance ({symbol})")
+    print(f"\nStep 3 - Random Forest Feature Importance ({symbol})")
 
     X = df[feature_cols].fillna(0)
     y = df["target"]
@@ -252,7 +252,7 @@ def step4_shap_analysis(rf, X_sample: pd.DataFrame, symbol: str):
     Calcule et visualise les SHAP values pour l'explainability.
     Essentiel pour justifier les décisions des agents.
     """
-    print(f"\n🔍 Step 4 — SHAP Analysis ({symbol})")
+    print(f"\nStep 4 - SHAP Analysis ({symbol})")
 
     # Échantillon pour SHAP (max 500 rows pour la vitesse)
     sample = X_sample.sample(min(500, len(X_sample)), random_state=42)
@@ -312,7 +312,7 @@ def step4_shap_analysis(rf, X_sample: pd.DataFrame, symbol: str):
 def run_feature_selection(symbol: str, timeframe: str = "1H") -> dict:
     """Pipeline complète de sélection pour un symbole."""
     print(f"\n{'='*55}")
-    print(f"  FEATURE SELECTION — {symbol} {timeframe}")
+    print(f"  FEATURE SELECTION - {symbol} {timeframe}")
     print(f"{'='*55}")
 
     df = load_features(symbol, timeframe)
@@ -365,9 +365,9 @@ def run_feature_selection(symbol: str, timeframe: str = "1H") -> dict:
     out_path = f"outputs/feature_selection/{symbol}_selected_features.json"
     with open(out_path, "w") as f:
         json.dump(result, f, indent=2, default=str)
-    print(f"\n   💾 Saved selection → {out_path}")
+    print(f"\n   Saved selection -> {out_path}")
 
-    print(f"\n   📋 Summary for {symbol}:")
+    print(f"\n   Summary for {symbol}:")
     print(f"      Initial   : {result['initial_features']} features")
     print(f"      After var : {result['after_variance']} features")
     print(f"      After cor : {result['after_correlation']} features")
@@ -396,9 +396,9 @@ def build_global_report(all_results: dict):
     all_feature_sets = [set(r["final_features"]) for r in all_results.values() if r]
     if all_feature_sets:
         common_features = set.intersection(*all_feature_sets)
-        print(f"\n   🎯 Features communes à toutes les paires ({len(common_features)}):")
+        print(f"\n   Common features across all pairs ({len(common_features)}):")
         for f in sorted(common_features):
-            print(f"      • {f}  [{classify_feature(f)}]")
+            print(f"      - {f}  [{classify_feature(f)}]")
 
     # Graphe : nombre de features par famille par paire
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
@@ -449,7 +449,7 @@ def build_global_report(all_results: dict):
     }
     with open("outputs/feature_selection/global_report.json", "w") as f:
         json.dump(global_report, f, indent=2, default=str)
-    print("\n   💾 Global report saved → outputs/feature_selection/global_report.json")
+    print("\n   Global report saved -> outputs/feature_selection/global_report.json")
 
 
 # ─────────────────────────────────────────
@@ -471,6 +471,6 @@ if __name__ == "__main__":
     build_global_report(all_results)
 
     print(f"\n{'='*55}")
-    print("  ✅ FEATURE SELECTION COMPLETE")
-    print(f"  Outputs → outputs/feature_selection/")
+    print("  [OK] FEATURE SELECTION COMPLETE")
+    print(f"  Outputs -> outputs/feature_selection/")
     print(f"{'='*55}")

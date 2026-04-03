@@ -98,7 +98,7 @@ def influx_write_api():
 # ─────────────────────────────────────────
 
 def task_scrape_mt5_prices():
-    log.info("📊 [MT5] Fetching live prices...")
+    log.info("[MT5] Fetching live prices...")
     try:
         if not mt5.initialize():
             log.error(f"MT5 init failed: {mt5.last_error()}")
@@ -133,7 +133,7 @@ def task_scrape_mt5_prices():
 
         if points:
             write_api.write(bucket=INFLUXDB_BUCKET, org=INFLUXDB_ORG, record=points)
-            log.info(f"   ✅ Wrote {len(points)} price points to InfluxDB")
+            log.info(f"   [OK] Wrote {len(points)} price points to InfluxDB")
 
         client.close()
         mt5.shutdown()
@@ -146,7 +146,7 @@ def task_scrape_mt5_prices():
 # ─────────────────────────────────────────
 
 def task_scrape_news():
-    log.info("📰 [NEWS] Fetching RSS feeds...")
+    log.info("[NEWS] Fetching RSS feeds...")
     articles = []
 
     for src in RSS_SOURCES:
@@ -175,7 +175,7 @@ def task_scrape_news():
                     "scraped_at":   datetime.now(),
                 })
         except Exception as e:
-            log.warning(f"   ⚠️ [{src['name']}] {e}")
+            log.warning(f"   [WARN] [{src['name']}] {e}")
 
     # Deduplicate
     seen, unique = set(), []
@@ -185,7 +185,7 @@ def task_scrape_news():
             unique.append(a)
 
     if not unique:
-        log.info("   ℹ️ No new articles found")
+        log.info("   [INFO] No new articles found")
         return
 
     # Write to PostgreSQL
@@ -208,7 +208,7 @@ def task_scrape_news():
         conn.commit()
         cursor.close()
         conn.close()
-        log.info(f"   ✅ Inserted {inserted} new articles")
+        log.info(f"   [OK] Inserted {inserted} new articles")
     except Exception as e:
         log.error(f"[NEWS] DB write error: {e}")
 
@@ -217,7 +217,7 @@ def task_scrape_news():
 # ─────────────────────────────────────────
 
 def task_scrape_fred():
-    log.info("📈 [FRED] Fetching macro indicators...")
+    log.info("[FRED] Fetching macro indicators...")
     try:
         fred = Fred(api_key=FRED_API_KEY)
         conn   = pg_connect()
@@ -242,12 +242,12 @@ def task_scrape_fred():
                     )
                     total += 1
             except Exception as e:
-                log.warning(f"   ⚠️ [{series_id}] {e}")
+                log.warning(f"   [WARN] [{series_id}] {e}")
 
         conn.commit()
         cursor.close()
         conn.close()
-        log.info(f"   ✅ Upserted {total} macro records")
+        log.info(f"   [OK] Upserted {total} macro records")
 
     except Exception as e:
         log.error(f"[FRED] Error: {e}")
@@ -257,7 +257,7 @@ def task_scrape_fred():
 # ─────────────────────────────────────────
 
 def task_scrape_economic_calendar():
-    log.info("📅 [CALENDAR] Fetching economic events...")
+    log.info("[CALENDAR] Fetching economic events...")
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         url     = "https://www.forexfactory.com/calendar.php"
@@ -310,7 +310,7 @@ def task_scrape_economic_calendar():
         conn.commit()
         cursor.close()
         conn.close()
-        log.info(f"   ✅ Inserted {inserted} economic events")
+        log.info(f"   [OK] Inserted {inserted} economic events")
 
     except Exception as e:
         log.error(f"[CALENDAR] Error: {e}")
@@ -320,8 +320,8 @@ def task_scrape_economic_calendar():
 # ─────────────────────────────────────────
 
 def task_health_check():
-    log.info("💓 [HEALTH] Agent running — all systems OK")
-    log.info(f"   🕐 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    log.info("[HEALTH] Agent running - all systems OK")
+    log.info(f"   Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 # ─────────────────────────────────────────
 # SCHEDULER — MAIN ENTRY POINT
@@ -329,12 +329,12 @@ def task_health_check():
 
 def main():
     log.info("=" * 55)
-    log.info("  🚀 AUTONOMOUS SCRAPING AGENT STARTING")
+    log.info("  AUTONOMOUS SCRAPING AGENT STARTING")
     log.info("=" * 55)
 
     scheduler = BlockingScheduler(timezone="UTC")
 
-    # MT5 prices  → every 1 minute
+    # MT5 prices  -> every 1 minute
     scheduler.add_job(
         task_scrape_mt5_prices,
         trigger=IntervalTrigger(minutes=1),
@@ -343,7 +343,7 @@ def main():
         next_run_time=datetime.now()
     )
 
-    # Forex news  → every 15 minutes
+    # Forex news  -> every 15 minutes
     scheduler.add_job(
         task_scrape_news,
         trigger=IntervalTrigger(minutes=15),
@@ -352,7 +352,7 @@ def main():
         next_run_time=datetime.now()
     )
 
-    # FRED macro  → every 1 hour
+    # FRED macro  -> every 1 hour
     scheduler.add_job(
         task_scrape_fred,
         trigger=IntervalTrigger(hours=1),
@@ -361,7 +361,7 @@ def main():
         next_run_time=datetime.now()
     )
 
-    # Economic calendar → every 1 hour
+    # Economic calendar -> every 1 hour
     scheduler.add_job(
         task_scrape_economic_calendar,
         trigger=IntervalTrigger(hours=1),
@@ -370,7 +370,7 @@ def main():
         next_run_time=datetime.now()
     )
 
-    # Health check → every 5 minutes
+    # Health check -> every 5 minutes
     scheduler.add_job(
         task_health_check,
         trigger=IntervalTrigger(minutes=5),
@@ -378,18 +378,18 @@ def main():
         name="Health Check"
     )
 
-    log.info("📋 Scheduled tasks:")
-    log.info("   • MT5 Prices       → every 1 min")
-    log.info("   • Forex News       → every 15 min")
-    log.info("   • FRED Macro       → every 1 hour")
-    log.info("   • Econ Calendar    → every 1 hour")
-    log.info("   • Health Check     → every 5 min")
+    log.info("Scheduled tasks:")
+    log.info("   - MT5 Prices       -> every 1 min")
+    log.info("   - Forex News       -> every 15 min")
+    log.info("   - FRED Macro       -> every 1 hour")
+    log.info("   - Econ Calendar    -> every 1 hour")
+    log.info("   - Health Check     -> every 5 min")
     log.info("=" * 55)
 
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):
-        log.info("🛑 Agent stopped gracefully.")
+        log.info("Agent stopped gracefully.")
 
 if __name__ == "__main__":
     main()

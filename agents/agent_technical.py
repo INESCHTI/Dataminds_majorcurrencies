@@ -107,7 +107,7 @@ def load_latest_ohlc(symbol: str, timeframe: str, n: int = 100) -> pd.DataFrame:
         df.set_index("time", inplace=True)
         return df.astype(float)
     except Exception as e:
-        print(f"   ⚠️ InfluxDB error: {e}")
+        print(f"   [WARN] InfluxDB error: {e}")
         return pd.DataFrame()
 
 
@@ -251,26 +251,26 @@ def detect_chart_patterns(symbol_tf: str) -> str:
         rng  = h - l
 
         if (body / (rng + 1e-10)).iloc[-1] < 0.1:
-            patterns.append("DOJI — indecision, possible reversal")
+            patterns.append("DOJI - indecision, possible reversal")
         if c.iloc[-1] > o.iloc[-1] and c.iloc[-2] < o.iloc[-2] \
            and c.iloc[-1] > o.iloc[-2] and o.iloc[-1] < c.iloc[-2]:
-            patterns.append("BULLISH ENGULFING — reversal UP")
+            patterns.append("BULLISH ENGULFING - reversal UP")
         if c.iloc[-1] < o.iloc[-1] and c.iloc[-2] > o.iloc[-2] \
            and c.iloc[-1] < o.iloc[-2] and o.iloc[-1] > c.iloc[-2]:
-            patterns.append("BEARISH ENGULFING — reversal DOWN")
+            patterns.append("BEARISH ENGULFING - reversal DOWN")
         if h.iloc[-5:].is_monotonic_increasing and l.iloc[-5:].is_monotonic_increasing:
-            patterns.append("HIGHER HIGHS + HIGHER LOWS — strong uptrend")
+            patterns.append("HIGHER HIGHS + HIGHER LOWS - strong uptrend")
         elif h.iloc[-5:].is_monotonic_decreasing and l.iloc[-5:].is_monotonic_decreasing:
-            patterns.append("LOWER HIGHS + LOWER LOWS — strong downtrend")
+            patterns.append("LOWER HIGHS + LOWER LOWS - strong downtrend")
 
         ind = compute_indicators(df)
         rsi = ind.get("rsi", 50)
         if rsi < 30:
-            patterns.append(f"RSI OVERSOLD ({rsi:.1f}) — BUY zone")
+            patterns.append(f"RSI OVERSOLD ({rsi:.1f}) - BUY zone")
         elif rsi > 70:
-            patterns.append(f"RSI OVERBOUGHT ({rsi:.1f}) — SELL zone")
+            patterns.append(f"RSI OVERBOUGHT ({rsi:.1f}) - SELL zone")
         if ind.get("bb_width", 1) < 0.005:
-            patterns.append("BOLLINGER SQUEEZE — breakout incoming")
+            patterns.append("BOLLINGER SQUEEZE - breakout incoming")
 
         return json.dumps({
             "symbol": symbol, "timeframe": tf,
@@ -332,7 +332,7 @@ TOOLS = [get_technical_indicators, get_multi_timeframe_analysis,
 class TechnicalPatternAgent:
 
     def __init__(self):
-        print("🤖 Initializing Technical Pattern Agent (v2)...")
+        print("Initializing Technical Pattern Agent (v2)...")
 
         self.llm = ChatOllama(
             model=OLLAMA_MODEL,
@@ -353,19 +353,19 @@ class TechnicalPatternAgent:
 
         print(f"   LLM  : {OLLAMA_MODEL} (local)")
         print(f"   Tools: {[t.name for t in TOOLS]}")
-        print("   ✅ Ready!\n")
+        print("   [OK] Ready!\n")
 
     def analyze(self, symbol: str) -> dict:
-        print(f"\n{'='*55}\n  📊 TECHNICAL ANALYSIS — {symbol}\n{'='*55}")
+        print(f"\n{'='*55}\n  TECHNICAL ANALYSIS - {symbol}\n{'='*55}")
 
         # ── STEP 1 : appel direct des outils (données réelles garanties)
-        print("   🔧 Collecting real data from tools...")
+        print("   Collecting real data from tools...")
         mtf  = get_multi_timeframe_analysis.invoke(symbol)
         ind  = get_technical_indicators.invoke(f"{symbol} 1H")
         pat  = detect_chart_patterns.invoke(f"{symbol} 1H")
         sr   = get_support_resistance.invoke(f"{symbol} 1D")
 
-        print(f"   ✅ Data collected")
+        print(f"   [OK] Data collected")
 
         # ── STEP 2 : LLM synthétise les vraies données
         synthesis_prompt = f"""
@@ -410,7 +410,7 @@ Only use BUY, SELL, or HOLD. Base everything strictly on the data provided.
             output   = response.content
             self.chat_history.append(AIMessage(content=output))
 
-            print(f"\n🤖 LLM Synthesis:\n{output[:600]}...")
+            print(f"\nLLM Synthesis:\n{output[:600]}...")
 
             signal_data = self._parse_signal(output, symbol)
             signal_data.update({
@@ -428,7 +428,7 @@ Only use BUY, SELL, or HOLD. Base everything strictly on the data provided.
             return signal_data
 
         except Exception as e:
-            print(f"   ❌ LLM error: {e}")
+            print(f"   [ERROR] LLM error: {e}")
             return self._fallback_signal(symbol)
 
     def _parse_signal(self, output: str, symbol: str) -> dict:
@@ -452,7 +452,7 @@ Only use BUY, SELL, or HOLD. Base everything strictly on the data provided.
         return {"symbol": symbol, "signal": signal, "confidence": 0.5, "reasoning": output[:400]}
 
     def _fallback_signal(self, symbol: str) -> dict:
-        print("   ⚠️ Fallback: direct computation (no LLM)")
+        print("   [WARN] Fallback: direct computation (no LLM)")
         df = load_latest_ohlc(symbol, "1H")
         if df.empty:
             return {"symbol": symbol, "signal": "HOLD", "confidence": 0.0}
@@ -471,7 +471,7 @@ Only use BUY, SELL, or HOLD. Base everything strictly on the data provided.
         path = f"outputs/signals/technical_{symbol}_{datetime.utcnow().strftime('%Y%m%d_%H%M')}.json"
         with open(path, "w") as f:
             json.dump(signal, f, indent=2, default=str)
-        print(f"\n   💾 Signal → {path}")
+        print(f"\n   Saved signal -> {path}")
 
 # ─────────────────────────────────────────
 # MAIN
@@ -482,7 +482,7 @@ if __name__ == "__main__":
     print("  TECHNICAL PATTERN AGENT v2")
     print("  FX-AlphaLab | Major Currencies")
     print("="*55)
-    print("\n⚠️  Prerequisites:")
+    print("\n[WARN] Prerequisites:")
     print("   ollama pull mistral  (then keep Ollama running)")
     print("   pip install langchain>=0.2.0 langchain-ollama\n")
 
