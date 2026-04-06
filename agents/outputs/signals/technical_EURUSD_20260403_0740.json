@@ -1,0 +1,33 @@
+{
+  "signal": "SELL",
+  "confidence": 0.65,
+  "reasoning": "The multi-timeframe analysis does not show any clear bullish trend, and the daily S&R levels indicate that EURUSD is currently trading near the S1 support level. The account snapshot shows a healthy balance and free margin, allowing for a conservative approach.",
+  "entry_zone": "1.14961",
+  "stop_loss": "1.1454",
+  "take_profit": "1.1539",
+  "symbol": "EURUSD",
+  "risk_mode": "standard",
+  "timestamp": "2026-04-03T07:40:14.114837",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"EURUSD\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-03T07:39:32.788732\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"EURUSD\",\n  \"timeframe\": \"1D\",\n  \"price\": 1.1539,\n  \"pivot\": 1.15508,\n  \"R1\": 1.15929,\n  \"R2\": 1.16476,\n  \"S1\": 1.14961,\n  \"S2\": 1.1454,\n  \"pips_to_R1\": 53.9,\n  \"pips_to_S1\": 42.9\n}",
+    "account_snapshot": {
+      "available": true,
+      "login": 5048337779,
+      "balance": 100000.0,
+      "equity": 100000.0,
+      "profit": 0.0,
+      "margin": 0.0,
+      "free_margin": 100000.0,
+      "margin_level": 0.0,
+      "leverage": 100,
+      "currency": "USD",
+      "positions_count": 0,
+      "orders_count": 0,
+      "symbol_exposure": {}
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "signal": "BUY",
+  "confidence": 0.65,
+  "reasoning": "The multi-timeframe analysis does not show a clear downtrend, and the current price is near the S1 support level on the daily chart, which could potentially act as a springboard for an upward move. The account snapshot shows a healthy balance and free margin.",
+  "entry_zone": "158.82533",
+  "stop_loss": "158.08367",
+  "take_profit": "160.02633",
+  "symbol": "USDJPY",
+  "risk_mode": "standard",
+  "timestamp": "2026-04-03T07:53:12.359369",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"USDJPY\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-03T07:52:29.411191\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"USDJPY\",\n  \"timeframe\": \"1D\",\n  \"price\": 159.572,\n  \"pivot\": 159.28467,\n  \"R1\": 160.02633,\n  \"R2\": 160.48567,\n  \"S1\": 158.82533,\n  \"S2\": 158.08367,\n  \"pips_to_R1\": 4543.3,\n  \"pips_to_S1\": 7466.7\n}",
+    "account_snapshot": {
+      "available": true,
+      "login": 5048337779,
+      "balance": 100000.0,
+      "equity": 100000.0,
+      "profit": 0.0,
+      "margin": 0.0,
+      "free_margin": 100000.0,
+      "margin_level": 0.0,
+      "leverage": 100,
+      "currency": "USD",
+      "positions_count": 0,
+      "orders_count": 0,
+      "symbol_exposure": {}
+    }
+  }
+}

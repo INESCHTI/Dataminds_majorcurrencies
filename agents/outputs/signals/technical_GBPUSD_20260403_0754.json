@@ -1,0 +1,33 @@
+{
+  "signal": "BUY",
+  "confidence": 0.65,
+  "reasoning": "The multi-timeframe analysis does not show a clear downtrend, and the current price is near the S1 support level on the daily chart, which could potentially act as a springboard for an upward move. The account snapshot shows a healthy balance and free margin.",
+  "entry_zone": "1.3164",
+  "stop_loss": "1.31033",
+  "take_profit": "1.33027",
+  "symbol": "GBPUSD",
+  "risk_mode": "standard",
+  "timestamp": "2026-04-03T07:54:01.495952",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"GBPUSD\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-03T07:53:12.957339\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"GBPUSD\",\n  \"timeframe\": \"1D\",\n  \"price\": 1.32334,\n  \"pivot\": 1.3242,\n  \"R1\": 1.33027,\n  \"R2\": 1.33807,\n  \"S1\": 1.3164,\n  \"S2\": 1.31033,\n  \"pips_to_R1\": 69.3,\n  \"pips_to_S1\": 69.4\n}",
+    "account_snapshot": {
+      "available": true,
+      "login": 5048337779,
+      "balance": 100000.0,
+      "equity": 100000.0,
+      "profit": 0.0,
+      "margin": 0.0,
+      "free_margin": 100000.0,
+      "margin_level": 0.0,
+      "leverage": 100,
+      "currency": "USD",
+      "positions_count": 0,
+      "orders_count": 0,
+      "symbol_exposure": {}
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "signal": "BUY",
+  "confidence": 0.65,
+  "reasoning": "The multi-timeframe analysis does not show a clear downtrend, and the current price is near the S1 support level on the daily chart, which could potentially act as a springboard for an upward move. The account snapshot shows a healthy balance and free margin.",
+  "entry_zone": "0.79395",
+  "stop_loss": "0.78924",
+  "take_profit": "0.80211",
+  "symbol": "USDCHF",
+  "risk_mode": "standard",
+  "timestamp": "2026-04-03T07:55:19.180502",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"USDCHF\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-03T07:54:01.741030\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"USDCHF\",\n  \"timeframe\": \"1D\",\n  \"price\": 0.79866,\n  \"pivot\": 0.7974,\n  \"R1\": 0.80211,\n  \"R2\": 0.80556,\n  \"S1\": 0.79395,\n  \"S2\": 0.78924,\n  \"pips_to_R1\": 34.5,\n  \"pips_to_S1\": 47.1\n}",
+    "account_snapshot": {
+      "available": true,
+      "login": 5048337779,
+      "balance": 100000.0,
+      "equity": 100000.0,
+      "profit": 0.0,
+      "margin": 0.0,
+      "free_margin": 100000.0,
+      "margin_level": 0.0,
+      "leverage": 100,
+      "currency": "USD",
+      "positions_count": 0,
+      "orders_count": 0,
+      "symbol_exposure": {}
+    }
+  }
+}
