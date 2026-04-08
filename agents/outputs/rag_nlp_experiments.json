@@ -1,0 +1,754 @@
+{
+  "dataset": {
+    "num_documents": 44,
+    "signals_dir": "D:\\4DS\\pi\\Forex-alpha\\agents\\outputs\\signals"
+  },
+  "retrieval_experiments": {
+    "tfidf": {
+      "avg_top1_score": 0.251912,
+      "top3_symbol_hit_rate": 1.0
+    },
+    "bm25": {
+      "avg_top1_score": 3.278978,
+      "top3_symbol_hit_rate": 1.0
+    },
+    "hybrid": {
+      "avg_top1_score": 0.032787,
+      "top3_symbol_hit_rate": 1.0
+    },
+    "semantic": {
+      "avg_top1_score": 0.251912,
+      "top3_symbol_hit_rate": 1.0
+    }
+  },
+  "clustering_experiments": {
+    "kmeans_tfidf": {
+      "metrics": {
+        "silhouette": 0.2535813767361139,
+        "davies_bouldin": 1.5967972112419497
+      },
+      "topic_terms": {
+        "0": [
+          "sentiment",
+          "oil",
+          "wrap",
+          "investinglive",
+          "market",
+          "wrap oil",
+          "news",
+          "markets"
+        ],
+        "1": [
+          "technical",
+          "level",
+          "daily",
+          "support",
+          "technical symbol",
+          "agent technical",
+          "support level",
+          "s1"
+        ],
+        "2": [
+          "agent orchestrator",
+          "orchestrator symbol",
+          "orchestrator",
+          "conflict",
+          "eyes",
+          "consensus directional",
+          "directional conflict",
+          "eyes agreement"
+        ],
+        "3": [
+          "trading signal",
+          "insufficient data",
+          "confidence insufficient",
+          "data generate",
+          "generate",
+          "generate trading",
+          "trading",
+          "data"
+        ]
+      },
+      "sentiment_summary": {
+        "0": {
+          "avg_positive": 0.013706800526219762,
+          "avg_negative": 0.01585252802180404,
+          "avg_compound": -0.3333333333333333,
+          "size": 9
+        },
+        "1": {
+          "avg_positive": 0.04032058313073351,
+          "avg_negative": 0.02344666019781227,
+          "avg_compound": 0.3333333333333333,
+          "size": 21
+        },
+        "2": {
+          "avg_positive": 0.03333333333333333,
+          "avg_negative": 0.016666666666666666,
+          "avg_compound": 0.08333333333333333,
+          "size": 8
+        },
+        "3": {
+          "avg_positive": 0.0,
+          "avg_negative": 0.0,
+          "avg_compound": 0.0,
+          "size": 6
+        }
+      }
+    },
+    "lda_topics": {
+      "metrics": {
+        "silhouette": 0.8961083605392139,
+        "davies_bouldin": 0.203091181408564
+      },
+      "topic_terms": {
+        "0": [
+          "signal",
+          "agent",
+          "confidence",
+          "symbol",
+          "buy",
+          "data",
+          "usdjpy",
+          "bullish"
+        ],
+        "1": [
+          "sentiment",
+          "oil",
+          "signal",
+          "wrap",
+          "investinglive",
+          "market",
+          "agent",
+          "confidence"
+        ],
+        "2": [
+          "signal",
+          "level",
+          "technical",
+          "symbol",
+          "confidence",
+          "agent",
+          "support",
+          "daily"
+        ],
+        "3": [
+          "technical",
+          "signal",
+          "chart",
+          "agent",
+          "confidence",
+          "symbol",
+          "timeframe",
+          "analysis"
+        ]
+      },
+      "sentiment_summary": {
+        "0": {
+          "avg_positive": 0.0704861111111111,
+          "avg_negative": 0.04876792114695341,
+          "avg_compound": 0.2222222222222222,
+          "size": 6
+        },
+        "1": {
+          "avg_positive": 0.005874343082665613,
+          "avg_negative": 0.006793940580773158,
+          "avg_compound": -0.14285714285714285,
+          "size": 21
+        },
+        "2": {
+          "avg_positive": 0.044505202399939235,
+          "avg_negative": 0.01443001443001443,
+          "avg_compound": 0.5714285714285714,
+          "size": 7
+        },
+        "3": {
+          "avg_positive": 0.03789458289458289,
+          "avg_negative": 0.02320955695955696,
+          "avg_compound": 0.2333333333333333,
+          "size": 10
+        }
+      }
+    },
+    "agglomerative_svd": {
+      "metrics": {
+        "silhouette": 0.26635539555233734,
+        "davies_bouldin": 1.4952999610774538
+      },
+      "topic_terms": {
+        "0": [
+          "buy",
+          "technical",
+          "level",
+          "daily",
+          "support",
+          "technical symbol",
+          "agent technical",
+          "support level"
+        ],
+        "1": [
+          "sentiment",
+          "oil",
+          "wrap",
+          "investinglive",
+          "market",
+          "wrap oil",
+          "news",
+          "markets"
+        ],
+        "2": [
+          "45",
+          "consensus directional",
+          "directional",
+          "directional conflict",
+          "45 clean",
+          "eyes agreement",
+          "agreement",
+          "agreement insufficient"
+        ],
+        "3": [
+          "trading signal",
+          "insufficient data",
+          "confidence insufficient",
+          "data generate",
+          "generate",
+          "generate trading",
+          "trading",
+          "data"
+        ]
+      },
+      "sentiment_summary": {
+        "0": {
+          "avg_positive": 0.04840864836574217,
+          "avg_negative": 0.02720492162988657,
+          "avg_compound": 0.3333333333333333,
+          "size": 23
+        },
+        "1": {
+          "avg_positive": 0.013706800526219762,
+          "avg_negative": 0.01585252802180404,
+          "avg_compound": -0.3333333333333333,
+          "size": 9
+        },
+        "2": {
+          "avg_positive": 0.0,
+          "avg_negative": 0.0,
+          "avg_compound": 0.0,
+          "size": 6
+        },
+        "3": {
+          "avg_positive": 0.0,
+          "avg_negative": 0.0,
+          "avg_compound": 0.0,
+          "size": 6
+        }
+      }
+    }
+  },
+  "sample_chat_answers": {
+    "tfidf": [
+      {
+        "question": "Quel est le biais sur EURUSD ?",
+        "strategy": "tfidf",
+        "answer": "agent=macro\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while the EU's economic data remains flat. This suggests a bearish outlook for EURUSD. agent=technical\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.65\nThe multi-timeframe analysis does not show any clear bullish trend, and the daily S&R levels indicate that EURUSD is currently trading near the S1 support level.",
+        "contexts": [
+          {
+            "doc_id": "macro_EURUSD_20260407_2237",
+            "title": "macro EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.193485
+          },
+          {
+            "doc_id": "technical_EURUSD_20260403_0740",
+            "title": "technical EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.158035
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2304",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.156084
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2301",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.156084
+          }
+        ]
+      },
+      {
+        "question": "Pourquoi USDJPY est en vente ?",
+        "strategy": "tfidf",
+        "answer": "agent=macro\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while Japan's economic data remains flat. This suggests a bullish outlook for USDJPY. agent=orchestrator\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.65\nFour-Eyes satisfied: >=2 BUY votes, no eligible SELL conflict",
+        "contexts": [
+          {
+            "doc_id": "macro_USDJPY_20260407_2238",
+            "title": "macro USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.244753
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2301",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.166557
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2307",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.166557
+          },
+          {
+            "doc_id": "technical_USDJPY_20260407_2215",
+            "title": "technical USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.158105
+          }
+        ]
+      },
+      {
+        "question": "Quels risques macro influencent GBPUSD ?",
+        "strategy": "tfidf",
+        "answer": "agent=macro\nsymbol=GBPUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bearish environment for the USD, while UK's economic data remains flat. This suggests a bearish outlook for GBPUSD. agent=orchestrator\nsymbol=GBPUSD\nsignal=HOLD\nconfidence=0.45\nNo clean Four-Eyes agreement (insufficient consensus or directional conflict)",
+        "contexts": [
+          {
+            "doc_id": "macro_GBPUSD_20260407_2240",
+            "title": "macro GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.271764
+          },
+          {
+            "doc_id": "orchestrator_GBPUSD_20260407_2304",
+            "title": "orchestrator GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.132018
+          },
+          {
+            "doc_id": "orchestrator_GBPUSD_20260407_2301",
+            "title": "orchestrator GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.132018
+          },
+          {
+            "doc_id": "macro_USDCHF_20260407_2241",
+            "title": "macro USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.116505
+          }
+        ]
+      },
+      {
+        "question": "Quel est le sentiment dominant sur USDCHF ?",
+        "strategy": "tfidf",
+        "answer": "agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe overall sentiment for USDCHF remains neutral with a balanced mix of positive and negative sentiments towards the pair. agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe neutral sentiment and balanced outlook on USDCHF suggest holding the current position. There has been no significant change in sentiment momentum over the past 24 hours.",
+        "contexts": [
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2301",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.297645
+          },
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2302",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.247478
+          },
+          {
+            "doc_id": "sentiment_USDJPY_20260407_2306",
+            "title": "sentiment USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.193142
+          },
+          {
+            "doc_id": "sentiment_GBPUSD_20260407_2303",
+            "title": "sentiment GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.192624
+          }
+        ]
+      }
+    ],
+    "bm25": [
+      {
+        "question": "Quel est le biais sur EURUSD ?",
+        "strategy": "bm25",
+        "answer": "agent=macro\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while the EU's economic data remains flat. This suggests a bearish outlook for EURUSD. agent=technical\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.65\nThe multi-timeframe analysis does not show any clear bullish trend, and the daily S&R levels indicate that EURUSD is currently trading near the S1 support level.",
+        "contexts": [
+          {
+            "doc_id": "macro_EURUSD_20260407_2237",
+            "title": "macro EURUSD",
+            "symbol": "EURUSD",
+            "score": 1.593942
+          },
+          {
+            "doc_id": "technical_EURUSD_20260403_0740",
+            "title": "technical EURUSD",
+            "symbol": "EURUSD",
+            "score": 1.457377
+          },
+          {
+            "doc_id": "technical_EURUSD_20260324_1119",
+            "title": "technical EURUSD",
+            "symbol": "EURUSD",
+            "score": 1.433191
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2301",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 1.433191
+          }
+        ]
+      },
+      {
+        "question": "Pourquoi USDJPY est en vente ?",
+        "strategy": "bm25",
+        "answer": "agent=macro\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while Japan's economic data remains flat. This suggests a bullish outlook for USDJPY. agent=orchestrator\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.65\nFour-Eyes satisfied: >=2 BUY votes, no eligible SELL conflict",
+        "contexts": [
+          {
+            "doc_id": "macro_USDJPY_20260407_2238",
+            "title": "macro USDJPY",
+            "symbol": "USDJPY",
+            "score": 2.513816
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2301",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 2.275905
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2307",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 2.275905
+          },
+          {
+            "doc_id": "technical_USDJPY_20260407_2215",
+            "title": "technical USDJPY",
+            "symbol": "USDJPY",
+            "score": 2.081599
+          }
+        ]
+      },
+      {
+        "question": "Quels risques macro influencent GBPUSD ?",
+        "strategy": "bm25",
+        "answer": "agent=macro\nsymbol=GBPUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bearish environment for the USD, while UK's economic data remains flat. This suggests a bearish outlook for GBPUSD. agent=macro\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while Japan's economic data remains flat.",
+        "contexts": [
+          {
+            "doc_id": "macro_GBPUSD_20260407_2240",
+            "title": "macro GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 5.189335
+          },
+          {
+            "doc_id": "macro_USDJPY_20260407_2238",
+            "title": "macro USDJPY",
+            "symbol": "USDJPY",
+            "score": 2.486729
+          },
+          {
+            "doc_id": "macro_USDCHF_20260407_2241",
+            "title": "macro USDCHF",
+            "symbol": "USDCHF",
+            "score": 2.486729
+          },
+          {
+            "doc_id": "macro_EURUSD_20260407_2237",
+            "title": "macro EURUSD",
+            "symbol": "EURUSD",
+            "score": 2.456505
+          }
+        ]
+      },
+      {
+        "question": "Quel est le sentiment dominant sur USDCHF ?",
+        "strategy": "bm25",
+        "answer": "agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe overall sentiment for USDCHF remains neutral with a balanced mix of positive and negative sentiments towards the pair. agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe neutral sentiment and balanced outlook on USDCHF suggest holding the current position. There has been no significant change in sentiment momentum over the past 24 hours.",
+        "contexts": [
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2301",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 3.818818
+          },
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2302",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 3.595276
+          },
+          {
+            "doc_id": "macro_USDCHF_20260407_2241",
+            "title": "macro USDCHF",
+            "symbol": "USDCHF",
+            "score": 2.513816
+          },
+          {
+            "doc_id": "sentiment_EURUSD_20260407_2300",
+            "title": "sentiment EURUSD",
+            "symbol": "EURUSD",
+            "score": 2.30804
+          }
+        ]
+      }
+    ],
+    "hybrid": [
+      {
+        "question": "Quel est le biais sur EURUSD ?",
+        "strategy": "hybrid",
+        "answer": "agent=macro\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while the EU's economic data remains flat. This suggests a bearish outlook for EURUSD. agent=technical\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.65\nThe multi-timeframe analysis does not show any clear bullish trend, and the daily S&R levels indicate that EURUSD is currently trading near the S1 support level.",
+        "contexts": [
+          {
+            "doc_id": "macro_EURUSD_20260407_2237",
+            "title": "macro EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.032787
+          },
+          {
+            "doc_id": "technical_EURUSD_20260403_0740",
+            "title": "technical EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.032258
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2304",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.031746
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2301",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.03125
+          }
+        ]
+      },
+      {
+        "question": "Pourquoi USDJPY est en vente ?",
+        "strategy": "hybrid",
+        "answer": "agent=macro\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while Japan's economic data remains flat. This suggests a bullish outlook for USDJPY. agent=orchestrator\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.65\nFour-Eyes satisfied: >=2 BUY votes, no eligible SELL conflict",
+        "contexts": [
+          {
+            "doc_id": "macro_USDJPY_20260407_2238",
+            "title": "macro USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.032787
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2307",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.032258
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2301",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.031746
+          },
+          {
+            "doc_id": "technical_USDJPY_20260407_2215",
+            "title": "technical USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.03125
+          }
+        ]
+      },
+      {
+        "question": "Quels risques macro influencent GBPUSD ?",
+        "strategy": "hybrid",
+        "answer": "agent=macro\nsymbol=GBPUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bearish environment for the USD, while UK's economic data remains flat. This suggests a bearish outlook for GBPUSD. agent=macro\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, but Switzerland's economic data remains flat.",
+        "contexts": [
+          {
+            "doc_id": "macro_GBPUSD_20260407_2240",
+            "title": "macro GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.032787
+          },
+          {
+            "doc_id": "macro_USDCHF_20260407_2241",
+            "title": "macro USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.031754
+          },
+          {
+            "doc_id": "orchestrator_GBPUSD_20260407_2304",
+            "title": "orchestrator GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.031514
+          },
+          {
+            "doc_id": "orchestrator_GBPUSD_20260407_2301",
+            "title": "orchestrator GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.031025
+          }
+        ]
+      },
+      {
+        "question": "Quel est le sentiment dominant sur USDCHF ?",
+        "strategy": "hybrid",
+        "answer": "agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe overall sentiment for USDCHF remains neutral with a balanced mix of positive and negative sentiments towards the pair. agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe neutral sentiment and balanced outlook on USDCHF suggest holding the current position. There has been no significant change in sentiment momentum over the past 24 hours.",
+        "contexts": [
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2301",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.032787
+          },
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2302",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.032258
+          },
+          {
+            "doc_id": "sentiment_EURUSD_20260407_2300",
+            "title": "sentiment EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.03101
+          },
+          {
+            "doc_id": "macro_USDCHF_20260407_2241",
+            "title": "macro USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.030798
+          }
+        ]
+      }
+    ],
+    "semantic": [
+      {
+        "question": "Quel est le biais sur EURUSD ?",
+        "strategy": "semantic",
+        "answer": "agent=macro\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while the EU's economic data remains flat. This suggests a bearish outlook for EURUSD. agent=technical\nsymbol=EURUSD\nsignal=SELL\nconfidence=0.65\nThe multi-timeframe analysis does not show any clear bullish trend, and the daily S&R levels indicate that EURUSD is currently trading near the S1 support level.",
+        "contexts": [
+          {
+            "doc_id": "macro_EURUSD_20260407_2237",
+            "title": "macro EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.193485
+          },
+          {
+            "doc_id": "technical_EURUSD_20260403_0740",
+            "title": "technical EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.158035
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2304",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.156084
+          },
+          {
+            "doc_id": "orchestrator_EURUSD_20260407_2301",
+            "title": "orchestrator EURUSD",
+            "symbol": "EURUSD",
+            "score": 0.156084
+          }
+        ]
+      },
+      {
+        "question": "Pourquoi USDJPY est en vente ?",
+        "strategy": "semantic",
+        "answer": "agent=macro\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bullish environment for the USD, while Japan's economic data remains flat. This suggests a bullish outlook for USDJPY. agent=orchestrator\nsymbol=USDJPY\nsignal=BUY\nconfidence=0.65\nFour-Eyes satisfied: >=2 BUY votes, no eligible SELL conflict",
+        "contexts": [
+          {
+            "doc_id": "macro_USDJPY_20260407_2238",
+            "title": "macro USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.244753
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2301",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.166557
+          },
+          {
+            "doc_id": "orchestrator_USDJPY_20260407_2307",
+            "title": "orchestrator USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.166557
+          },
+          {
+            "doc_id": "technical_USDJPY_20260407_2215",
+            "title": "technical USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.158105
+          }
+        ]
+      },
+      {
+        "question": "Quels risques macro influencent GBPUSD ?",
+        "strategy": "semantic",
+        "answer": "agent=macro\nsymbol=GBPUSD\nsignal=SELL\nconfidence=0.7\nThe strengthening US economy and higher interest rates create a bearish environment for the USD, while UK's economic data remains flat. This suggests a bearish outlook for GBPUSD. agent=orchestrator\nsymbol=GBPUSD\nsignal=HOLD\nconfidence=0.45\nNo clean Four-Eyes agreement (insufficient consensus or directional conflict)",
+        "contexts": [
+          {
+            "doc_id": "macro_GBPUSD_20260407_2240",
+            "title": "macro GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.271764
+          },
+          {
+            "doc_id": "orchestrator_GBPUSD_20260407_2304",
+            "title": "orchestrator GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.132018
+          },
+          {
+            "doc_id": "orchestrator_GBPUSD_20260407_2301",
+            "title": "orchestrator GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.132018
+          },
+          {
+            "doc_id": "macro_USDCHF_20260407_2241",
+            "title": "macro USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.116505
+          }
+        ]
+      },
+      {
+        "question": "Quel est le sentiment dominant sur USDCHF ?",
+        "strategy": "semantic",
+        "answer": "agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe overall sentiment for USDCHF remains neutral with a balanced mix of positive and negative sentiments towards the pair. agent=sentiment\nsymbol=USDCHF\nsignal=HOLD\nconfidence=0.5\nThe neutral sentiment and balanced outlook on USDCHF suggest holding the current position. There has been no significant change in sentiment momentum over the past 24 hours.",
+        "contexts": [
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2301",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.297645
+          },
+          {
+            "doc_id": "sentiment_USDCHF_20260407_2302",
+            "title": "sentiment USDCHF",
+            "symbol": "USDCHF",
+            "score": 0.247478
+          },
+          {
+            "doc_id": "sentiment_USDJPY_20260407_2306",
+            "title": "sentiment USDJPY",
+            "symbol": "USDJPY",
+            "score": 0.193142
+          },
+          {
+            "doc_id": "sentiment_GBPUSD_20260407_2303",
+            "title": "sentiment GBPUSD",
+            "symbol": "GBPUSD",
+            "score": 0.192624
+          }
+        ]
+      }
+    ]
+  }
+}

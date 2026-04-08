@@ -211,6 +211,38 @@ export interface SignalResponseV2 {
             macro: string;
             news: string;
         };
+        data_latency?: {
+            source_age_minutes: {
+                ohlcv: number | null;
+                macro: number | null;
+                news: number | null;
+            };
+            limits_minutes: {
+                soft: number;
+                hard: number;
+            };
+            impact: {
+                severity: "LOW" | "MEDIUM" | "HIGH";
+                stale_soft_count: number;
+                stale_hard_count: number;
+                confidence_penalty: number;
+                warnings: string[];
+            };
+        };
+        data_source_freshness?: {
+            source_age_minutes: {
+                ohlcv: number | null;
+                macro: number | null;
+                news: number | null;
+            };
+            impact: {
+                severity: "LOW" | "MEDIUM" | "HIGH";
+                stale_soft_count: number;
+                stale_hard_count: number;
+                confidence_penalty: number;
+                warnings: string[];
+            };
+        };
     };
 }
 

@@ -1,0 +1,62 @@
+{
+  "symbol": "USDJPY",
+  "signal": "BUY",
+  "confidence": 0.65,
+  "reasoning": "Four-Eyes satisfied: >=2 BUY votes, no eligible SELL conflict",
+  "four_eyes": true,
+  "missing_agents": [],
+  "auto_run_attempts": [
+    {
+      "agent": "sentiment",
+      "ok": true,
+      "returncode": 0,
+      "command": "D:\\4DS\\ML\\anac\\python.exe D:\\4DS\\pi\\Forex-alpha\\agents\\agent_sentiment.py USDJPY"
+    }
+  ],
+  "timestamp": "2026-04-07T23:07:28.127502+00:00",
+  "agent": "orchestrator",
+  "inputs": {
+    "technical": {
+      "signal": "BUY",
+      "confidence": 0.6,
+      "timestamp": "2026-04-07T22:15:38.546062+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\technical_USDJPY_20260407_2215.json"
+    },
+    "macro": {
+      "signal": "BUY",
+      "confidence": 0.7,
+      "timestamp": "2026-04-07T22:38:41.825787+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\macro_USDJPY_20260407_2238.json"
+    },
+    "sentiment": {
+      "signal": "HOLD",
+      "confidence": 0.6,
+      "timestamp": "2026-04-07T23:07:27.601256+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\sentiment_USDJPY_20260407_2307.json"
+    }
+  },
+  "audit": {
+    "min_vote_confidence": 0.55,
+    "max_signal_age_minutes": 360,
+    "eligible_votes": [
+      {
+        "agent": "technical",
+        "signal": "BUY",
+        "confidence": 0.6
+      },
+      {
+        "agent": "macro",
+        "signal": "BUY",
+        "confidence": 0.7
+      }
+    ],
+    "buy_votes": 2,
+    "sell_votes": 0,
+    "priority_min_confidence": 0.48,
+    "priority_require_macro": true,
+    "decision_mode": "strict"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "signal": "SELL",
+  "confidence": 0.7,
+  "reasoning": "The strengthening US economy and higher interest rates create a bullish environment for the USD, while the EU's economic data remains flat. This suggests a bearish outlook for EURUSD.",
+  "macro_bias": "USD_BULLISH",
+  "key_drivers": [
+    "US CPI trend",
+    "Fed rate direction",
+    "Real yield"
+  ],
+  "event_risk": "LOW",
+  "rate_differential_signal": "BULLISH",
+  "symbol": "EURUSD",
+  "risk_mode": "standard",
+  "timestamp": "2026-04-07T22:37:29.591790",
+  "agent": "macro",
+  "raw_data": {
+    "macro_indicators": "{\n  \"CPIAUCSL\": {\n    \"name\": \"US CPI\",\n    \"value\": 326.588,\n    \"date\": \"2026-01-01\",\n    \"delta\": 0.557,\n    \"trend\": \"UP\"\n  },\n  \"DEXJPUS\": {\n    \"name\": \"USD/JPY Exchange Rate\",\n    \"value\": 152.77,\n    \"date\": \"2026-02-13\",\n    \"delta\": 0.13,\n    \"trend\": \"UP\"\n  },\n  \"DEXSZUS\": {\n    \"name\": \"USD/CHF Exchange Rate\",\n    \"value\": 0.7685,\n    \"date\": \"2026-02-13\",\n    \"delta\": -0.0008,\n    \"trend\": \"DOWN\"\n  },\n  \"DEXUSEU\": {\n    \"name\": \"EUR/USD Exchange Rate\",\n    \"value\": 1.187,\n    \"date\": \"2026-02-13\",\n    \"delta\": 0.0,\n    \"trend\": \"FLAT\"\n  },\n  \"DEXUSUK\": {\n    \"name\": \"GBP/USD Exchange Rate\",\n    \"value\": 1.3644,\n    \"date\": \"2026-02-13\",\n    \"delta\": 0.0012,\n    \"trend\": \"UP\"\n  },\n  \"DGS10\": {\n    \"name\": \"US 10Y Treasury\",\n    \"value\": 4.33,\n    \"date\": \"2026-04-01\",\n    \"delta\": 0.03,\n    \"trend\": \"UP\"\n  },\n  \"FEDFUNDS\": {\n    \"name\": \"Federal Funds Rate\",\n    \"value\": 3.64,\n    \"date\": \"2026-03-01\",\n    \"delta\": 0.0,\n    \"trend\": \"FLAT\"\n  },\n  \"GDP\": {\n    \"name\": \"US GDP\",\n    \"value\": 31490.07,\n    \"date\": \"2025-10-01\",\n    \"delta\": 392.043,\n    \"trend\": \"UP\"\n  },\n  \"T10YIE\": {\n    \"name\": \"US 10Y Inflation Expectations\",\n    \"value\": 2.34,\n    \"date\": \"2026-04-02\",\n    \"delta\": 0.03,\n    \"trend\": \"UP\"\n  },\n  \"UNRATE\": {\n    \"name\": \"US Unemployment Rate\",\n    \"value\": 4.3,\n    \"date\": \"2026-01-01\",\n    \"delta\": -0.1,\n    \"trend\": \"DOWN\"\n  },\n  \"pair_context\": {\n    \"symbol\": \"EURUSD\",\n    \"base\": \"EUR\",\n    \"quote\": \"USD\",\n    \"macro_focus\": [\n      \"US\",\n      \"EU\"\n    ]\n  },\n  \"derived\": {\n    \"real_rate\": -322.948,\n    \"yield_curve_signal\": \"DOVISH\"\n  }\n}",
+    "economic_events": "{\"events\": [], \"message\": \"No recent economic events found\"}",
+    "rate_differential": "{\n  \"symbol\": \"EURUSD\",\n  \"base_currency\": \"EUR\",\n  \"quote_currency\": \"USD\",\n  \"fed_funds_rate\": 3.64,\n  \"us_yield_10y\": 4.33,\n  \"inflation_exp\": 2.34,\n  \"real_yield\": 1.99,\n  \"carry_signal\": \"USD_BULLISH\",\n  \"interpretation\": \"High Fed rate (3.64%) favors USD strength \\u2192 bearish EURUSD\"\n}",
+    "news": "{\"headlines\": [], \"message\": \"No recent news found\"}",
+    "account_snapshot": {
+      "available": true,
+      "balance": 100000.0,
+      "equity": 100000.0,
+      "free_margin": 100000.0,
+      "margin_level": 0.0,
+      "leverage": 100,
+      "positions_count": 0,
+      "symbol_exposure": {}
+    }
+  }
+}

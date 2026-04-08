@@ -24,9 +24,11 @@ import {
     TrendingUp,
     CandlestickChart,
     Monitor,
+    Database,
     Settings,
     LogOut,
     User,
+    FlaskConical,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -37,6 +39,9 @@ const navItems = [
     { title: "Analytics", href: "/analytics", icon: BarChart3 },
     { title: "Reports", href: "/reports", icon: FileText },
     { title: "Monitoring", href: "/monitoring", icon: Monitor },
+    { title: "RAG Lab", href: "/rag-lab", icon: FlaskConical },
+    { title: "Data Console", href: "/data-console", icon: Database },
+    { title: "Debug Data", href: "/debug-data", icon: Database },
     { title: "Settings", href: "/settings", icon: Settings },
 ];
 

@@ -1,0 +1,17 @@
+{
+  "signal": "SELL",
+  "confidence": 0.6,
+  "reasoning": "The current price is near the daily support level (S1: 1.14961), and there are no bullish signals across any of the analyzed timeframes. Selling at or near the support level could potentially capitalize on a potential downward movement.",
+  "entry_zone": "1.14961",
+  "stop_loss": "1.1539",
+  "take_profit": "1.1454",
+  "symbol": "EURUSD",
+  "timestamp": "2026-04-07T22:22:55.540464",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"EURUSD\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-07T22:22:23.110312\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"EURUSD\",\n  \"timeframe\": \"1D\",\n  \"price\": 1.1539,\n  \"pivot\": 1.15508,\n  \"R1\": 1.15929,\n  \"R2\": 1.16476,\n  \"S1\": 1.14961,\n  \"S2\": 1.1454,\n  \"pips_to_R1\": 53.9,\n  \"pips_to_S1\": 42.9\n}"
+  }
+}

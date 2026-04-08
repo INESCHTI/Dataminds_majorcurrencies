@@ -1,0 +1,455 @@
+{
+  "questions": [
+    "Combiner sentiment et analyse technique pour EURUSD",
+    "Quel est le sentiment news sur GBPUSD ?",
+    "Donne un signal technique pour USDJPY",
+    "Verifier la fraicheur et la latence des donnees puis decider sur USDCHF"
+  ],
+  "per_method_runs": {
+    "rule_based": [
+      {
+        "method": "rule_based",
+        "question": "Combiner sentiment et analyse technique pour EURUSD",
+        "pair": "EURUSD",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "EURUSD",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "BUY",
+              "sentiment_confidence": 0.7,
+              "fusion_score": 0.315,
+              "decision": "BUY"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "EURUSD",
+          "decision": "BUY",
+          "fusion_score": 0.315,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 104
+      },
+      {
+        "method": "rule_based",
+        "question": "Quel est le sentiment news sur GBPUSD ?",
+        "pair": "GBPUSD",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "GBPUSD",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "HOLD",
+              "sentiment_confidence": 0.5,
+              "fusion_score": 0.0,
+              "decision": "NEUTRAL"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "GBPUSD",
+          "decision": "NEUTRAL",
+          "fusion_score": 0.0,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 40
+      },
+      {
+        "method": "rule_based",
+        "question": "Donne un signal technique pour USDJPY",
+        "pair": "USDJPY",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "USDJPY",
+              "technical_signal": "BUY",
+              "technical_confidence": 0.65,
+              "sentiment_signal": "HOLD",
+              "sentiment_confidence": 0.5,
+              "fusion_score": 0.3575,
+              "decision": "BUY"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "USDJPY",
+          "decision": "BUY",
+          "fusion_score": 0.3575,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 46
+      },
+      {
+        "method": "rule_based",
+        "question": "Verifier la fraicheur et la latence des donnees puis decider sur USDCHF",
+        "pair": "USDCHF",
+        "selected_tools": [
+          "freshness_health"
+        ],
+        "tool_outputs": [
+          {
+            "name": "freshness_health",
+            "ok": true,
+            "payload": {
+              "timestamp": "2026-04-08T00:59:07.361Z",
+              "freshness": {
+                "status": "WARN",
+                "last_news_timestamp": "2026-04-07T22:08:58.519Z",
+                "age_minutes": 170.15,
+                "articles_last_1h": 0,
+                "articles_last_24h": 9,
+                "freshness_score": 25.97,
+                "target_max_age_minutes": 0
+              }
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "USDCHF",
+          "decision": "NEUTRAL",
+          "fusion_score": 0.0,
+          "reason": "No tool data available"
+        },
+        "duration_ms": 38
+      }
+    ],
+    "nlp_router": [
+      {
+        "method": "nlp_router",
+        "question": "Combiner sentiment et analyse technique pour EURUSD",
+        "pair": "EURUSD",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "EURUSD",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "BUY",
+              "sentiment_confidence": 0.7,
+              "fusion_score": 0.315,
+              "decision": "BUY"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "EURUSD",
+          "decision": "BUY",
+          "fusion_score": 0.315,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 330
+      },
+      {
+        "method": "nlp_router",
+        "question": "Quel est le sentiment news sur GBPUSD ?",
+        "pair": "GBPUSD",
+        "selected_tools": [
+          "sentiment_snapshot"
+        ],
+        "tool_outputs": [
+          {
+            "name": "sentiment_snapshot",
+            "ok": true,
+            "payload": {
+              "pair": "GBPUSD",
+              "signal": "HOLD",
+              "confidence": 0.5,
+              "reasoning": "The neutral sentiment and balanced outlook on GBPUSD suggest holding the current position. However, be aware of potential market volatility due to oil price movements and geopolitical events.",
+              "sentiment_score": -0.06,
+              "sentiment_label": "NEUTRAL",
+              "sentiment_momentum": "STABLE",
+              "high_impact_risk": false,
+              "news_volume": 5,
+              "symbol": "GBPUSD",
+              "risk_mode": "standard",
+              "timestamp": "2026-04-07T23:05:09.232196",
+              "agent": "sentiment",
+              "nlp_model": "lexical",
+              "raw_data": {
+                "sentiment_scores": "{\n  \"symbol\": \"GBPUSD\",\n  \"articles_analyzed\": 5,\n  \"overall_score\": -0.06,\n  \"rolling_3h_score\": 0.0,\n  \"distribution\": {\n    \"positive\": 1,\n    \"negative\": 1,\n    \"neutral\": 3\n  },\n  \"bullish_ratio\": 0.2,\n  \"bearish_ratio\": 0.2,\n  \"sentiment_label\": \"NEUTRAL\",\n  \"momentum\": 0.06,\n  \"top_articles\": [\n    {\n      \"title\": \"investingLive Americas market news wrap: Oil skyrockets but stock markets shrug it off\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 20:21\",\n      \"sentiment\": \"neutral\",\n      \"score\": 0.0,\n      \"positive\": 0.0,\n      \"negative\": 0.0,\n      \"neutral\": 1.0\n    },\n    {\n      \"title\": \"investingLive European session wrap: Oil prices surge as market sentiment sours\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 12:06\",\n      \"sentiment\": \"positive\",\n      \"score\": 0.2,\n      \"positive\": 0.6,\n      \"negative\": 0.4,\n      \"neutral\": 0.0\n    },\n    {\n      \"title\": \"Oil extends gains, risk slumps further after Trump address\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 06:23\",\n      \"sentiment\": \"neutral\",\n      \"score\": 0.0,\n      \"positive\": 0.5,\n      \"negative\": 0.5,\n      \"neutral\": 0.0\n    },\n    {\n      \"title\": \"How is China handling the unrest in the Middle East?\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 05:32\",\n      \"sentiment\": \"neutral\",\n      \"score\": 0.0,\n      \"positive\": 0.0,\n      \"negative\": 0.0,\n      \"neutral\": 1.0\n    },\n    {\n      \"title\": \"investingLive Asia-Pacific FX news wrap: Markets wanted Trump withdrawal, didn\\u2019t get it\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 03:39\",\n      \"sentiment\": \"negative\",\n      \"score\": -0.5,\n      \"positive\": 0.25,\n      \"negative\": 0.75,\n      \"neutral\": 0.0\n    }\n  ],\n  \"finbert_used\": false\n}",
+                "sentiment_trend": "{\n  \"symbol\": \"GBPUSD\",\n  \"trend\": {\n    \"24h\": {\n      \"score\": 0.0,\n      \"count\": 0,\n      \"label\": \"NEUTRAL\"\n    },\n    \"72h\": {\n      \"score\": 0.0,\n      \"count\": 0,\n      \"label\": \"NEUTRAL\"\n    },\n    \"7d\": {\n      \"score\": 0.0,\n      \"count\": 5,\n      \"label\": \"NEUTRAL\"\n    },\n    \"momentum\": {\n      \"value\": 0.0,\n      \"signal\": \"STABLE\"\n    }\n  }\n}",
+                "high_impact_news": "{\"symbol\": \"GBPUSD\", \"high_impact_detected\": false, \"events\": []}",
+                "weighted_sentiment": "{\"symbol\": \"GBPUSD\", \"weighted_score\": 0.0, \"message\": \"No news\"}",
+                "account_snapshot": {
+                  "available": true,
+                  "balance": 100000.0,
+                  "equity": 100000.0,
+                  "free_margin": 100000.0,
+                  "margin_level": 0.0,
+                  "leverage": 100,
+                  "positions_count": 0,
+                  "symbol_exposure": {}
+                }
+              }
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "GBPUSD",
+          "decision": "HOLD",
+          "fusion_score": 0.5,
+          "reason": "Sentiment-only fallback"
+        },
+        "duration_ms": 4
+      },
+      {
+        "method": "nlp_router",
+        "question": "Donne un signal technique pour USDJPY",
+        "pair": "USDJPY",
+        "selected_tools": [
+          "technical_snapshot"
+        ],
+        "tool_outputs": [
+          {
+            "name": "technical_snapshot",
+            "ok": true,
+            "payload": {
+              "pair": "USDJPY",
+              "source": "api",
+              "signal": "BUY",
+              "confidence": 0.65,
+              "price": 159.572,
+              "indicators": {
+                "Confidence": 0.65,
+                "RSI": 50,
+                "ATR": 0.8
+              }
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "USDJPY",
+          "decision": "BUY",
+          "fusion_score": 0.65,
+          "reason": "Technical-only fallback"
+        },
+        "duration_ms": 25
+      },
+      {
+        "method": "nlp_router",
+        "question": "Verifier la fraicheur et la latence des donnees puis decider sur USDCHF",
+        "pair": "USDCHF",
+        "selected_tools": [
+          "freshness_health",
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "freshness_health",
+            "ok": true,
+            "payload": {
+              "timestamp": "2026-04-08T00:59:07.758Z",
+              "freshness": {
+                "status": "WARN",
+                "last_news_timestamp": "2026-04-07T22:08:58.519Z",
+                "age_minutes": 170.15,
+                "articles_last_1h": 0,
+                "articles_last_24h": 9,
+                "freshness_score": 25.97,
+                "target_max_age_minutes": 0
+              }
+            },
+            "error": null
+          },
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "USDCHF",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "HOLD",
+              "sentiment_confidence": 0.5,
+              "fusion_score": 0.0,
+              "decision": "NEUTRAL"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "USDCHF",
+          "decision": "NEUTRAL",
+          "fusion_score": 0.0,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 64
+      }
+    ],
+    "llm_langchain_router": [
+      {
+        "method": "llm_langchain_router",
+        "question": "Combiner sentiment et analyse technique pour EURUSD",
+        "pair": "EURUSD",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "EURUSD",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "BUY",
+              "sentiment_confidence": 0.7,
+              "fusion_score": 0.315,
+              "decision": "BUY"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "EURUSD",
+          "decision": "BUY",
+          "fusion_score": 0.315,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 357
+      },
+      {
+        "method": "llm_langchain_router",
+        "question": "Quel est le sentiment news sur GBPUSD ?",
+        "pair": "GBPUSD",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "GBPUSD",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "HOLD",
+              "sentiment_confidence": 0.5,
+              "fusion_score": 0.0,
+              "decision": "NEUTRAL"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "GBPUSD",
+          "decision": "NEUTRAL",
+          "fusion_score": 0.0,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 370
+      },
+      {
+        "method": "llm_langchain_router",
+        "question": "Donne un signal technique pour USDJPY",
+        "pair": "USDJPY",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "USDJPY",
+              "technical_signal": "BUY",
+              "technical_confidence": 0.65,
+              "sentiment_signal": "HOLD",
+              "sentiment_confidence": 0.5,
+              "fusion_score": 0.3575,
+              "decision": "BUY"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "USDJPY",
+          "decision": "BUY",
+          "fusion_score": 0.3575,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 374
+      },
+      {
+        "method": "llm_langchain_router",
+        "question": "Verifier la fraicheur et la latence des donnees puis decider sur USDCHF",
+        "pair": "USDCHF",
+        "selected_tools": [
+          "fuse_sentiment_technical"
+        ],
+        "tool_outputs": [
+          {
+            "name": "fuse_sentiment_technical",
+            "ok": true,
+            "payload": {
+              "pair": "USDCHF",
+              "technical_signal": "NEUTRAL",
+              "technical_confidence": 0.45,
+              "sentiment_signal": "HOLD",
+              "sentiment_confidence": 0.5,
+              "fusion_score": 0.0,
+              "decision": "NEUTRAL"
+            },
+            "error": null
+          }
+        ],
+        "final_decision": {
+          "pair": "USDCHF",
+          "decision": "NEUTRAL",
+          "fusion_score": 0.0,
+          "reason": "Combined sentiment + technical"
+        },
+        "duration_ms": 377
+      }
+    ]
+  },
+  "summary": {
+    "rule_based": {
+      "success_rate": 1.0,
+      "avg_duration_ms": 57.0,
+      "avg_tools_called": 1.0,
+      "avg_abs_fusion_score": 0.1681
+    },
+    "nlp_router": {
+      "success_rate": 1.0,
+      "avg_duration_ms": 105.75,
+      "avg_tools_called": 1.25,
+      "avg_abs_fusion_score": 0.3663
+    },
+    "llm_langchain_router": {
+      "success_rate": 1.0,
+      "avg_duration_ms": 369.5,
+      "avg_tools_called": 1.0,
+      "avg_abs_fusion_score": 0.1681
+    }
+  }
+}

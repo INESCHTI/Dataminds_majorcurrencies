@@ -10,7 +10,19 @@ import type {
     FreshnessHealthV2,
 } from "@/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+function normalizeApiBase(raw?: string): string {
+    const base = (raw || "/api").trim().replace(/\/$/, "");
+    if (!base) {
+        return "/api";
+    }
+    if (base.endsWith("/api")) {
+        return base;
+    }
+    return `${base}/api`;
+}
+
+const API_BASE = normalizeApiBase(process.env.NEXT_PUBLIC_API_URL);
+const API_BASES = Array.from(new Set([API_BASE, "/api"]));
 
 async function fetchWithTimeout(input: string, init: RequestInit = {}, timeoutMs = 15000): Promise<Response> {
     const controller = new AbortController();
@@ -37,9 +49,22 @@ export class ApiRequestError extends Error {
 }
 
 async function fetcher<T>(url: string): Promise<T> {
-    const res = await fetchWithTimeout(`${API_BASE}${url}`, { cache: "no-store" }, 15000);
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    return res.json();
+    let lastError: unknown = null;
+
+    for (const base of API_BASES) {
+        try {
+            const res = await fetchWithTimeout(`${base}${url}`, { cache: "no-store" }, 15000);
+            if (!res.ok) {
+                lastError = new Error(`API error: ${res.status}`);
+                continue;
+            }
+            return res.json();
+        } catch (error) {
+            lastError = error;
+        }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error("API fallback failed");
 }
 
 // â”€â”€â”€ API Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -68,27 +93,53 @@ export const api = {
     news: () =>
         fetcher<{ results: Array<{ title: string; source: string; published_at: string }> }>("/news/"),
 
-    triggerAgents: (pair: string) =>
-        fetch(`${API_BASE}/agents/run/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pair }),
-        }).then((r) => r.json()),
+    triggerAgents: async (pair: string) => {
+        for (const base of API_BASES) {
+            try {
+                const r = await fetch(`${base}/agents/run/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pair }),
+                });
+                if (r.ok) {
+                    return r.json();
+                }
+            } catch {
+                // try next base
+            }
+        }
+        throw new ApiRequestError("Impossible de declencher les agents via les routes API configurees.");
+    },
 
     // V2 Architecture Endpoints
     v2: {
         generateSignal: async (pair: string) => {
             try {
-                const response = await fetchWithTimeout(
-                    `${API_BASE}/v2/signals/generate_signal/`,
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        cache: "no-store",
-                        body: JSON.stringify({ pair }),
-                    },
-                    180000
-                );
+                let response: Response | null = null;
+                for (const base of API_BASES) {
+                    try {
+                        const candidate = await fetchWithTimeout(
+                            `${base}/v2/signals/generate_signal/`,
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                cache: "no-store",
+                                body: JSON.stringify({ pair }),
+                            },
+                            180000
+                        );
+                        response = candidate;
+                        if (candidate.ok) {
+                            break;
+                        }
+                    } catch {
+                        // try next base
+                    }
+                }
+
+                if (!response) {
+                    throw new ApiRequestError("Aucune route API repondante pour generate_signal.");
+                }
 
                 if (!response.ok) {
                     let backendMessage = "";
@@ -121,7 +172,7 @@ export const api = {
                 }
 
                 throw new ApiRequestError(
-                    "Login au backend impossible. Verifiez que l'API Django tourne sur le port 8000.",
+                    "Connexion API impossible. Verifiez la configuration NEXT_PUBLIC_API_URL et les routes /api.",
                 );
             }
         },

@@ -30,5 +30,15 @@ seaborn
 scipy
 statsmodels
 
-# Optional ML (future agents)
-scikit-learnx
+# Optional ML / NLP experiments
+scikit-learn
+nltk
+sentence-transformers
+
+# Optional LangChain integration for tool planning
+langchain-core
+langchain-ollama
+
+# OCR
+Pillow
+pytesseract

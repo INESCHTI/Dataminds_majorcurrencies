@@ -1,0 +1,17 @@
+{
+  "signal": "BUY",
+  "confidence": 0.6,
+  "reasoning": "Price is approaching the daily S1 support level at 0.79395, which could potentially act as a buying opportunity.",
+  "entry_zone": "0.79395",
+  "stop_loss": "0.78924",
+  "take_profit": "0.80211",
+  "symbol": "USDCHF",
+  "timestamp": "2026-04-07T22:16:59.424859",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"USDCHF\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-07T22:16:16.836497\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"USDCHF\",\n  \"timeframe\": \"1D\",\n  \"price\": 0.79866,\n  \"pivot\": 0.7974,\n  \"R1\": 0.80211,\n  \"R2\": 0.80556,\n  \"S1\": 0.79395,\n  \"S2\": 0.78924,\n  \"pips_to_R1\": 34.5,\n  \"pips_to_S1\": 47.1\n}"
+  }
+}

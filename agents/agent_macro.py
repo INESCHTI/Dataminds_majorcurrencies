@@ -25,6 +25,7 @@ import psycopg2
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from pathlib import Path
 from dotenv import load_dotenv
 
 try:
@@ -44,7 +45,38 @@ from langgraph.prebuilt import create_react_agent
 import MetaTrader5 as mt5
 
 warnings.filterwarnings("ignore")
-load_dotenv()
+
+
+def load_environment_files() -> None:
+    """Load local and project .env files with encoding fallback for Windows."""
+    current_file = Path(__file__).resolve()
+    env_candidates = [
+        current_file.parent / ".env",
+        current_file.parents[1] / ".env",
+    ]
+    encodings = ("utf-8", "utf-8-sig", "utf-16")
+
+    for env_path in env_candidates:
+        if not env_path.exists():
+            continue
+        loaded = False
+        for encoding in encodings:
+            try:
+                if load_dotenv(dotenv_path=env_path, override=False, encoding=encoding):
+                    print(f"Loaded env: {env_path} (encoding={encoding})")
+                loaded = True
+                break
+            except UnicodeDecodeError:
+                continue
+            except Exception as exc:
+                print(f"Warning: failed to load {env_path} ({encoding}): {exc}")
+                loaded = True
+                break
+        if not loaded:
+            print(f"Warning: could not decode env file {env_path} with supported encodings")
+
+
+load_environment_files()
 
 # ─────────────────────────────────────────
 # CONFIG
@@ -363,8 +395,8 @@ def get_economic_events(symbol: str) -> str:
                 "currency":   row["currency"],
                 "event":      row["event_name"],
                 "importance": row.get("importance", ""),
-                "forecast":   float(actual)   if pd.notna(actual)   else None,
-                "actual":     float(forecast)  if pd.notna(forecast)  else None,
+                "forecast":   float(forecast) if pd.notna(forecast) else None,
+                "actual":     float(actual)   if pd.notna(actual)   else None,
                 "previous":   float(previous) if pd.notna(previous) else None,
                 "surprise":   surprise,
                 "surprise_pct": surprise_pct,

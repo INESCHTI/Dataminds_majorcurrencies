@@ -85,6 +85,18 @@ function SignalLabContent() {
         : d === "SELL" ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
         : "bg-slate-500/15 text-slate-400 border-slate-500/30";
 
+    const sourceImpactSeverity =
+        (signal as any)?.metadata?.data_source_freshness?.impact?.severity ||
+        (signal as any)?.metadata?.data_latency?.impact?.severity ||
+        "LOW";
+
+    const sourceBadgeClass =
+        sourceImpactSeverity === "HIGH"
+            ? "bg-rose-500/15 text-rose-300 border-rose-500/40"
+            : sourceImpactSeverity === "MEDIUM"
+                ? "bg-amber-500/15 text-amber-300 border-amber-500/40"
+                : "bg-emerald-500/15 text-emerald-300 border-emerald-500/40";
+
     return (
         <div className="flex flex-col h-full bg-[#080d18] text-slate-100 relative overflow-hidden">
             <AuroraBackground />
@@ -281,6 +293,9 @@ function SignalLabContent() {
                                             <Layers className="size-4 text-violet-400" />
                                             <h3 className="text-sm font-bold text-white">Final Signal - {pair}</h3>
                                             <span className="text-[10px] font-mono text-slate-500 border border-slate-700 rounded px-1.5">DSO2.1 + DSO3.1</span>
+                                            <span className={`text-[10px] font-mono rounded border px-1.5 py-0.5 ${sourceBadgeClass}`}>
+                                                Source Latency: {sourceImpactSeverity}
+                                            </span>
                                         </div>
                                         <p className="text-[11px] text-slate-500">Weighted vote aggregation - confidence thresholds - conflict detection</p>
                                     </div>
@@ -313,6 +328,20 @@ function SignalLabContent() {
                                     <div className="text-[10px] text-slate-500 mb-1.5">Reasoning (LLM Explainability)</div>
                                     <p className="text-sm text-slate-300 leading-relaxed">{signal.signal.reasoning}</p>
                                 </div>
+
+                                {(signal as any)?.metadata?.data_source_freshness && (
+                                    <div className="p-3 rounded-lg bg-white/[0.03] border border-white/10 mb-3">
+                                        <div className="text-[10px] text-slate-500 mb-2">Source Latency Check (API/DB freshness)</div>
+                                        <div className="grid grid-cols-3 gap-2 text-[11px]">
+                                            {Object.entries((signal as any).metadata.data_source_freshness.source_age_minutes || {}).map(([k, v]) => (
+                                                <div key={k} className="rounded border border-white/10 bg-black/20 px-2 py-1.5">
+                                                    <div className="text-slate-400 uppercase">{k}</div>
+                                                    <div className="font-semibold text-white">{v === null ? "N/A" : `${v} min`}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {signal.signal.conflicts.length > 0 && (
                                     <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">

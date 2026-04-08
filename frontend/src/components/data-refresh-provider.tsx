@@ -9,7 +9,18 @@
 
 import { useEffect } from "react";
 
-const BACKEND = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+function normalizeApiBase(raw?: string): string {
+    const base = (raw || "/api").trim().replace(/\/$/, "");
+    if (!base) {
+        return "/api";
+    }
+    if (base.endsWith("/api")) {
+        return base;
+    }
+    return `${base}/api`;
+}
+
+const API_BASE = normalizeApiBase(process.env.NEXT_PUBLIC_API_URL);
 // Minimum interval between refreshes (ms) - avoids hammering on every tab open
 const MIN_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -23,7 +34,7 @@ export function DataRefreshProvider({ children }: { children: React.ReactNode })
         }
 
         // Fire-and-forget: POST to refresh endpoint
-        fetch(`${BACKEND}/api/v2/data/refresh_news/`, {
+        fetch(`${API_BASE}/v2/data/refresh_news/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
         })

@@ -1,0 +1,46 @@
+{
+  "symbol": "USDCHF",
+  "signal": "HOLD",
+  "confidence": 0.45,
+  "reasoning": "No clean Four-Eyes agreement (insufficient consensus or directional conflict)",
+  "four_eyes": false,
+  "missing_agents": [],
+  "timestamp": "2026-04-07T23:01:54.145228",
+  "agent": "orchestrator",
+  "inputs": {
+    "technical": {
+      "signal": "BUY",
+      "confidence": 0.6,
+      "timestamp": "2026-04-07T22:23:33.902477+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\technical_USDCHF_20260407_2223.json"
+    },
+    "macro": {
+      "signal": "HOLD",
+      "confidence": 0.5,
+      "timestamp": "2026-04-07T22:41:57.414103+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\macro_USDCHF_20260407_2241.json"
+    },
+    "sentiment": {
+      "signal": "HOLD",
+      "confidence": 0.5,
+      "timestamp": "2026-04-07T23:01:04.989576+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\sentiment_USDCHF_20260407_2301.json"
+    }
+  },
+  "audit": {
+    "min_vote_confidence": 0.55,
+    "max_signal_age_minutes": 360,
+    "eligible_votes": [
+      {
+        "agent": "technical",
+        "signal": "BUY",
+        "confidence": 0.6
+      }
+    ],
+    "buy_votes": 1,
+    "sell_votes": 0
+  }
+}

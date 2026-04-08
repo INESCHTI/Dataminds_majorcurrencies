@@ -1,0 +1,17 @@
+{
+  "signal": "HOLD",
+  "confidence": 0.5,
+  "reasoning": "No clear bullish or bearish signal across any timeframes. The daily chart shows potential resistance at R1 and support at S1.",
+  "entry_zone": "price: 1.14961",
+  "stop_loss": "S1 level: 1.1454",
+  "take_profit": "R1 level: 1.15929",
+  "symbol": "EURUSD",
+  "timestamp": "2026-04-07T22:06:52.870481",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"EURUSD\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-07T22:06:22.344619\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"EURUSD\",\n  \"timeframe\": \"1D\",\n  \"price\": 1.1539,\n  \"pivot\": 1.15508,\n  \"R1\": 1.15929,\n  \"R2\": 1.16476,\n  \"S1\": 1.14961,\n  \"S2\": 1.1454,\n  \"pips_to_R1\": 53.9,\n  \"pips_to_S1\": 42.9\n}"
+  }
+}

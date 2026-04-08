@@ -1,0 +1,17 @@
+{
+  "signal": "BUY",
+  "confidence": 0.6,
+  "reasoning": "Price is approaching the daily S1 support level at 1.3164, which could potentially act as a buying opportunity.",
+  "entry_zone": "1.3164",
+  "stop_loss": "1.31033",
+  "take_profit": "1.33027",
+  "symbol": "GBPUSD",
+  "timestamp": "2026-04-07T22:16:16.608319",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"GBPUSD\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-07T22:15:38.781295\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"GBPUSD\",\n  \"timeframe\": \"1D\",\n  \"price\": 1.32334,\n  \"pivot\": 1.3242,\n  \"R1\": 1.33027,\n  \"R2\": 1.33807,\n  \"S1\": 1.3164,\n  \"S2\": 1.31033,\n  \"pips_to_R1\": 69.3,\n  \"pips_to_S1\": 69.4\n}"
+  }
+}

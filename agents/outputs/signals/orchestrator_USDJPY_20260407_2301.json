@@ -1,0 +1,47 @@
+{
+  "symbol": "USDJPY",
+  "signal": "BUY",
+  "confidence": 0.65,
+  "reasoning": "Four-Eyes satisfied: >=2 BUY votes, no eligible SELL conflict",
+  "four_eyes": true,
+  "missing_agents": [
+    "sentiment"
+  ],
+  "timestamp": "2026-04-07T23:01:54.150463",
+  "agent": "orchestrator",
+  "inputs": {
+    "technical": {
+      "signal": "BUY",
+      "confidence": 0.6,
+      "timestamp": "2026-04-07T22:15:38.546062+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\technical_USDJPY_20260407_2215.json"
+    },
+    "macro": {
+      "signal": "BUY",
+      "confidence": 0.7,
+      "timestamp": "2026-04-07T22:38:41.825787+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\macro_USDJPY_20260407_2238.json"
+    },
+    "sentiment": null
+  },
+  "audit": {
+    "min_vote_confidence": 0.55,
+    "max_signal_age_minutes": 360,
+    "eligible_votes": [
+      {
+        "agent": "technical",
+        "signal": "BUY",
+        "confidence": 0.6
+      },
+      {
+        "agent": "macro",
+        "signal": "BUY",
+        "confidence": 0.7
+      }
+    ],
+    "buy_votes": 2,
+    "sell_votes": 0
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "symbol": "EURUSD",
+  "signal": "HOLD",
+  "confidence": 0.45,
+  "reasoning": "No clean Four-Eyes agreement (insufficient consensus or directional conflict)",
+  "four_eyes": false,
+  "missing_agents": [],
+  "auto_run_attempts": [],
+  "timestamp": "2026-04-07T23:04:26.948432+00:00",
+  "agent": "orchestrator",
+  "inputs": {
+    "technical": {
+      "signal": "SELL",
+      "confidence": 0.6,
+      "timestamp": "2026-04-07T22:22:55.540464+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\technical_EURUSD_20260407_2222.json"
+    },
+    "macro": {
+      "signal": "SELL",
+      "confidence": 0.7,
+      "timestamp": "2026-04-07T22:37:29.591790+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\macro_EURUSD_20260407_2237.json"
+    },
+    "sentiment": {
+      "signal": "BUY",
+      "confidence": 0.7,
+      "timestamp": "2026-04-07T23:00:00.161838+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\sentiment_EURUSD_20260407_2300.json"
+    }
+  },
+  "audit": {
+    "min_vote_confidence": 0.55,
+    "max_signal_age_minutes": 360,
+    "eligible_votes": [
+      {
+        "agent": "technical",
+        "signal": "SELL",
+        "confidence": 0.6
+      },
+      {
+        "agent": "macro",
+        "signal": "SELL",
+        "confidence": 0.7
+      },
+      {
+        "agent": "sentiment",
+        "signal": "BUY",
+        "confidence": 0.7
+      }
+    ],
+    "buy_votes": 1,
+    "sell_votes": 2,
+    "priority_min_confidence": 0.48,
+    "priority_require_macro": true,
+    "decision_mode": "hold"
+  }
+}

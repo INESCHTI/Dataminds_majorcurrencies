@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -11,8 +11,8 @@ import {
 import { TrendingUp, Scale, Target, Shield, BarChart3, Zap } from "lucide-react";
 import { AuroraBackground, FadeInUp, StaggerContainer, StaggerItem, AnimatedCounter, AnimatedProgressBar, FloatingCard } from "@/components/animations";
 
-// Walk-forward simulation - 5 years of data
-const wfData = Array.from({length:60}, (_,i) => {
+// Fallback walk-forward simulation
+const fallbackWfData = Array.from({length:60}, (_,i) => {
     const d = new Date("2021-01-01"); d.setMonth(d.getMonth()+i);
     const cum = 8000 + Math.sin(i/8)*1500 + i*120 + (Math.random()-0.45)*600;
     const daily = Math.round((Math.random()-0.42)*200);
@@ -24,7 +24,7 @@ const wfData = Array.from({length:60}, (_,i) => {
     };
 });
 
-const pairResults = [
+const fallbackPairResults = [
     { pair:"EUR/USD", winRate:58.3, sharpe:1.82, maxDD:12.4, trades:247, pnl:4320,  signal:"BUY"     },
     { pair:"USD/JPY", winRate:55.1, sharpe:1.54, maxDD:15.7, trades:198, pnl:2890,  signal:"SELL"    },
     { pair:"GBP/USD", winRate:61.2, sharpe:2.10, maxDD:10.2, trades:213, pnl:5640,  signal:"BUY"     },
@@ -50,6 +50,47 @@ export default function BacktestingPage() {
     const [riskPct, setRiskPct] = useState(2);
     const [rr, setRr] = useState(2.0);
     const [tab, setTab] = useState<"backtest"|"sizing">("backtest");
+    const [wfData, setWfData] = useState<any[]>(fallbackWfData);
+    const [pairResults, setPairResults] = useState<any[]>(fallbackPairResults);
+    const [metrics, setMetrics] = useState({ sharpeRatio: 1.73, winRate: 57.4, maxDrawdown: 14.8, totalTrades: 834, profitFactor: 1.89 });
+    const [tradePerf, setTradePerf] = useState<any | null>(null);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const res = await fetch("/api/v2/backtesting/summary", { cache: "no-store" });
+                if (!res.ok) return;
+                const payload = await res.json();
+                if (Array.isArray(payload?.wfData) && payload.wfData.length > 0) {
+                    setWfData(payload.wfData);
+                }
+                if (Array.isArray(payload?.pairResults) && payload.pairResults.length > 0) {
+                    setPairResults(payload.pairResults);
+                }
+                if (payload?.metrics) {
+                    setMetrics(payload.metrics);
+                }
+
+                const perfRes = await fetch("/api/v2/trading/performance", { cache: "no-store" });
+                if (perfRes.ok) {
+                    const perf = await perfRes.json();
+                    setTradePerf(perf);
+                    if (perf?.total_closed) {
+                        setMetrics((prev) => ({
+                            ...prev,
+                            winRate: Number((Number(perf.win_rate || 0) * 100).toFixed(1)),
+                            maxDrawdown: Number((Number(perf.max_drawdown || 0) * 100).toFixed(1)),
+                            totalTrades: Number(perf.total_closed || 0),
+                            profitFactor: Number(Number(perf.profit_factor || prev.profitFactor).toFixed(2)),
+                        }));
+                    }
+                }
+            } catch {
+                // Keep fallback visualization data.
+            }
+        };
+        load();
+    }, []);
 
     return (
         <div className="flex flex-col h-full bg-[#080d18] text-slate-100 relative overflow-hidden">
@@ -77,11 +118,11 @@ export default function BacktestingPage() {
                     <FadeInUp>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                             {[
-                                { l:"Sharpe Ratio",   v:1.73, s:"",   d:2, c:"text-blue-400",    desc:"Objectif: > 1.5" },
-                                { l:"Win Rate",       v:57.4, s:"%",  d:1, c:"text-emerald-400", desc:"Sur 5 ans" },
-                                { l:"Max Drawdown",   v:14.8, s:"%",  d:1, c:"text-rose-400",    desc:"Limite: 15%" },
-                                { l:"Total Trades",   v:834,  s:"",   d:0, c:"text-amber-400",   desc:"Walk-forward 60 mois" },
-                                { l:"Profit Factor",  v:1.89, s:"x",  d:2, c:"text-violet-400",  desc:"TP > SL ratio" },
+                                { l:"Sharpe Ratio",   v:metrics.sharpeRatio, s:"",   d:2, c:"text-blue-400",    desc:"Objectif: > 1.5" },
+                                { l:"Win Rate",       v:metrics.winRate, s:"%",  d:1, c:"text-emerald-400", desc:"Sur historique" },
+                                { l:"Max Drawdown",   v:metrics.maxDrawdown, s:"%",  d:1, c:"text-rose-400",    desc:"Limite: 15%" },
+                                { l:"Total Trades",   v:metrics.totalTrades,  s:"",   d:0, c:"text-amber-400",   desc:"Depuis signaux" },
+                                { l:"Profit Factor",  v:metrics.profitFactor, s:"x",  d:2, c:"text-violet-400",  desc:"TP > SL ratio" },
                             ].map((k,i) => (
                                 <motion.div key={i} initial={{opacity:0,y:10}} animate={{opacity:1,y:0}} transition={{delay:i*0.07}}
                                     className="p-4 rounded-xl border border-white/5 bg-white/[0.03] text-center">

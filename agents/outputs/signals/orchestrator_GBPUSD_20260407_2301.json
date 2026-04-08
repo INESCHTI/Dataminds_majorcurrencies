@@ -1,0 +1,47 @@
+{
+  "symbol": "GBPUSD",
+  "signal": "HOLD",
+  "confidence": 0.45,
+  "reasoning": "No clean Four-Eyes agreement (insufficient consensus or directional conflict)",
+  "four_eyes": false,
+  "missing_agents": [
+    "sentiment"
+  ],
+  "timestamp": "2026-04-07T23:01:54.147931",
+  "agent": "orchestrator",
+  "inputs": {
+    "technical": {
+      "signal": "BUY",
+      "confidence": 0.6,
+      "timestamp": "2026-04-07T22:16:16.608319+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\technical_GBPUSD_20260407_2216.json"
+    },
+    "macro": {
+      "signal": "SELL",
+      "confidence": 0.7,
+      "timestamp": "2026-04-07T22:40:20.645955+00:00",
+      "fresh": true,
+      "path": "outputs\\signals\\macro_GBPUSD_20260407_2240.json"
+    },
+    "sentiment": null
+  },
+  "audit": {
+    "min_vote_confidence": 0.55,
+    "max_signal_age_minutes": 360,
+    "eligible_votes": [
+      {
+        "agent": "technical",
+        "signal": "BUY",
+        "confidence": 0.6
+      },
+      {
+        "agent": "macro",
+        "signal": "SELL",
+        "confidence": 0.7
+      }
+    ],
+    "buy_votes": 1,
+    "sell_votes": 1
+  }
+}

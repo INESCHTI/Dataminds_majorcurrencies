@@ -1,0 +1,31 @@
+{
+  "signal": "BUY",
+  "confidence": 0.7,
+  "reasoning": "The overall bullish sentiment and positive news themes suggest a buying opportunity for EURUSD. However, be aware of the deteriorating sentiment momentum which could lead to market volatility.",
+  "sentiment_score": 0.275,
+  "sentiment_label": "BULLISH",
+  "sentiment_momentum": "DETERIORATING",
+  "high_impact_risk": false,
+  "news_volume": 8,
+  "symbol": "EURUSD",
+  "risk_mode": "standard",
+  "timestamp": "2026-04-07T23:00:00.161838",
+  "agent": "sentiment",
+  "nlp_model": "lexical",
+  "raw_data": {
+    "sentiment_scores": "{\n  \"symbol\": \"EURUSD\",\n  \"articles_analyzed\": 8,\n  \"overall_score\": 0.275,\n  \"rolling_3h_score\": 0.0,\n  \"distribution\": {\n    \"positive\": 4,\n    \"negative\": 1,\n    \"neutral\": 3\n  },\n  \"bullish_ratio\": 0.5,\n  \"bearish_ratio\": 0.125,\n  \"sentiment_label\": \"BULLISH\",\n  \"momentum\": -0.275,\n  \"top_articles\": [\n    {\n      \"title\": \"investingLive Americas market news wrap: Oil skyrockets but stock markets shrug it off\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 20:21\",\n      \"sentiment\": \"neutral\",\n      \"score\": 0.0,\n      \"positive\": 0.0,\n      \"negative\": 0.0,\n      \"neutral\": 1.0\n    },\n    {\n      \"title\": \"Something of a turnaround: What does the bond market see?\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 14:06\",\n      \"sentiment\": \"positive\",\n      \"score\": 1.0,\n      \"positive\": 1.0,\n      \"negative\": 0.0,\n      \"neutral\": 0.0\n    },\n    {\n      \"title\": \"investingLive European session wrap: Oil prices surge as market sentiment sours\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 12:06\",\n      \"sentiment\": \"positive\",\n      \"score\": 0.2,\n      \"positive\": 0.6,\n      \"negative\": 0.4,\n      \"neutral\": 0.0\n    },\n    {\n      \"title\": \"Switzerland March CPI +0.3% vs +0.5% y/y expected\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 06:30\",\n      \"sentiment\": \"positive\",\n      \"score\": 0.5,\n      \"positive\": 0.75,\n      \"negative\": 0.25,\n      \"neutral\": 0.0\n    },\n    {\n      \"title\": \"Oil extends gains, risk slumps further after Trump address\",\n      \"source\": \"ForexLive\",\n      \"date\": \"2026-04-02 06:23\",\n      \"sentiment\": \"neutral\",\n      \"score\": 0.0,\n      \"positive\": 0.5,\n      \"negative\": 0.5,\n      \"neutral\": 0.0\n    }\n  ],\n  \"finbert_used\": false\n}",
+    "sentiment_trend": "{\n  \"symbol\": \"EURUSD\",\n  \"trend\": {\n    \"24h\": {\n      \"score\": 0.0,\n      \"count\": 0,\n      \"label\": \"NEUTRAL\"\n    },\n    \"72h\": {\n      \"score\": 0.0,\n      \"count\": 0,\n      \"label\": \"NEUTRAL\"\n    },\n    \"7d\": {\n      \"score\": 0.1667,\n      \"count\": 8,\n      \"label\": \"BULLISH\"\n    },\n    \"momentum\": {\n      \"value\": -0.1667,\n      \"signal\": \"DETERIORATING\"\n    }\n  }\n}",
+    "high_impact_news": "{\"symbol\": \"EURUSD\", \"high_impact_detected\": false, \"events\": []}",
+    "weighted_sentiment": "{\n  \"symbol\": \"EURUSD\",\n  \"weighted_score\": 0.1667,\n  \"articles_used\": 8,\n  \"sentiment_label\": \"BULLISH\",\n  \"source_breakdown\": {\n    \"premium_sources\": 0,\n    \"total_sources\": 8\n  }\n}",
+    "account_snapshot": {
+      "available": true,
+      "balance": 100000.0,
+      "equity": 100000.0,
+      "free_margin": 100000.0,
+      "margin_level": 0.0,
+      "leverage": 100,
+      "positions_count": 0,
+      "symbol_exposure": {}
+    }
+  }
+}

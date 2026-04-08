@@ -1,0 +1,17 @@
+{
+  "signal": "BUY",
+  "confidence": 0.6,
+  "reasoning": "Price is approaching the daily S1 support level at 158.82533, which could potentially act as a buying opportunity.",
+  "entry_zone": "158.82533",
+  "stop_loss": "158.08367",
+  "take_profit": "160.02633",
+  "symbol": "USDJPY",
+  "timestamp": "2026-04-07T22:15:38.546062",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"1H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"4H\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"1D\": {\n    \"trend\": \"N/A\",\n    \"rsi\": 0,\n    \"macd_pos\": false,\n    \"bb_pct\": 0.5,\n    \"price\": 0\n  },\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "{\n  \"symbol\": \"USDJPY\",\n  \"timeframe\": \"1H\",\n  \"timestamp\": \"2026-04-07T22:15:03.961128\"\n}",
+    "patterns": "Insufficient data",
+    "support_resistance": "{\n  \"symbol\": \"USDJPY\",\n  \"timeframe\": \"1D\",\n  \"price\": 159.572,\n  \"pivot\": 159.28467,\n  \"R1\": 160.02633,\n  \"R2\": 160.48567,\n  \"S1\": 158.82533,\n  \"S2\": 158.08367,\n  \"pips_to_R1\": 4543.3,\n  \"pips_to_S1\": 7466.7\n}"
+  }
+}

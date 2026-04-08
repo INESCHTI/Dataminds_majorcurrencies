@@ -1,0 +1,14 @@
+{
+  "signal": "HOLD",
+  "confidence": 0,
+  "reasoning": "Insufficient data to generate a trading signal.",
+  "symbol": "USDCAD",
+  "timestamp": "2026-04-07T22:18:46.175253",
+  "agent": "technical",
+  "raw_data": {
+    "multi_timeframe": "{\n  \"confluence\": {\n    \"bullish_timeframes\": 0,\n    \"direction\": \"BEARISH\"\n  }\n}",
+    "indicators_1h": "No data for USDCAD 1H",
+    "patterns": "Insufficient data",
+    "support_resistance": "No data"
+  }
+}
