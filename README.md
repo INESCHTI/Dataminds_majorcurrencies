@@ -145,12 +145,26 @@ fx-alpha-platform/
 
 ### Multi-Agent System
 
-| Agent | Weight | Method |
-|-------|--------|--------|
-| **TechnicalAgentV2** | 40% | RSI/MACD/Bollinger/ADX rules → BUY/SELL/NEUTRAL |
-| **MacroAgentV2** | 35% | Rate differentials, carry trade, inflation analysis |
-| **SentimentAgentV2** | 25% | Pre-computed DB scores (fast) + LLM fallback |
-| **CoordinatorAgentV2** | — | Weighted voting, regime detection, correlation validation |
+**NEW: Orchestrator Agent** — LLM as Judge for intelligent query routing
+
+```
+User Query → Orchestrator (LLM) → Selected Agents → Coordinator → Final Decision
+```
+
+The Orchestrator analyzes each query and routes to **only relevant agents**:
+- "EURUSD broke resistance" → Technical + Sentiment agents
+- "Fed raised rates" → Macro + Geopolitical agents  
+- "Election in France" → Geopolitical + Macro agents
+- "Should I buy EURUSD?" → All 4 agents (comprehensive)
+
+| Agent | Weight | Method | Role |
+|-------|--------|--------|------|
+| **OrchestratorAgent** | — | LLM query classification | Routes to relevant agents |
+| **TechnicalAgentV2** | 30% | RSI/MACD/Bollinger/ADX rules | Technical analysis |
+| **MacroAgentV2** | 25% | Rate differentials, carry trade, inflation | Macroeconomic analysis |
+| **SentimentAgentV2** | 20% | Pre-computed DB scores + LLM fallback | Sentiment analysis |
+| **GeopoliticalAgentV2** | 25% | Political stability, trade policies | Geopolitical risk |
+| **CoordinatorAgentV2** | — | Weighted voting, regime detection | Aggregates selected agents |
 
 ---
 
@@ -197,9 +211,17 @@ npm run dev    # http://localhost:3000
 ### V2 Signal Pipeline
 
 ```bash
-# Generate trading signal (full pipeline)
+# Generate trading signal (full pipeline - all 4 agents)
 POST /api/v2/signals/generate_signal/
 Body: {"pair": "EURUSD"}
+
+# Generate orchestrated signal (LLM routes to relevant agents only)
+POST /api/v2-signals/generate_orchestrated_signal/
+Body: {
+    "pair": "EURUSD",
+    "query": "EURUSD broke resistance on Fed news",
+    "context": {"timeframe": "4H"}
+}
 
 # Health check + agent performances
 GET  /api/v2/monitoring/health_check/
@@ -260,6 +282,34 @@ GET  /api/data/technical-indicators/ # Technical indicators (real feature engine
       "sentiment": {"signal": "NEUTRAL", "confidence": 0.54}
     },
     "market_regime": "volatile"
+  }
+}
+```
+
+### Example Response — Orchestrated Signal (LLM Routing)
+
+```json
+{
+  "success": true,
+  "signal": {
+    "direction": "BUY",
+    "confidence": 0.72,
+    "reasoning": "=== ORCHESTRATED ANALYSIS ===\nQuery Category: COMBINED\nAgents Selected:\n  ★ TECHNICAL: BUY (75% conf, 40% weight) [PRIMARY]\n  ★ MACRO: BUY (65% conf, 35% weight) [PRIMARY]\n  ○ SENTIMENT: NEUTRAL (55% conf, 25% weight) [secondary]\n=== FINAL DECISION: BUY ===",
+    "agent_votes": {
+      "technical": {"signal": "BUY", "confidence": 0.75},
+      "macro": {"signal": "BUY", "confidence": 0.65},
+      "sentiment": {"signal": "NEUTRAL", "confidence": 0.55}
+    },
+    "market_regime": "trending"
+  },
+  "orchestration": {
+    "category": "combined",
+    "primary_agents": ["technical", "macro"],
+    "secondary_agents": ["sentiment"],
+    "routing_confidence": 0.85,
+    "routing_reasoning": "Query mentions technical breakout and Fed policy",
+    "agents_invoked": 3,
+    "total_available": 4
   }
 }
 ```

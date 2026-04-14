@@ -10,11 +10,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Import lightweight LLM
+# Import enhanced LLM factory
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from core.llm_factory_lightweight import get_lightweight_llm
+
+try:
+    from core.llm_factory_enhanced import get_enhanced_llm_factory
+    USE_ENHANCED_LLM = True
+except ImportError:
+    from core.llm_factory_local import get_local_llm_factory
+    USE_ENHANCED_LLM = False
 
 
 class SentimentFeatureEngine:
@@ -24,7 +30,12 @@ class SentimentFeatureEngine:
     """
     
     def __init__(self):
-        self.llm = get_lightweight_llm()
+        if USE_ENHANCED_LLM:
+            self.llm = get_enhanced_llm_factory()
+            logger.info("✅ Using enhanced LLM for sentiment analysis")
+        else:
+            self.llm = get_local_llm_factory()
+            logger.info("⚠️ Using fallback LLM for sentiment analysis")
         self.currencies = ['EUR', 'GBP', 'USD', 'JPY', 'CHF', 'AUD', 'CAD']
         
         # Sentiment weights for different sources

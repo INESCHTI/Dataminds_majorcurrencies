@@ -7,8 +7,15 @@ from typing import Dict, List, Optional
 from datetime import datetime
 import time
 
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+# Import conditionnel pour éviter les erreurs
+try:
+    from langchain.prompts import PromptTemplate
+    from langchain.chains import LLMChain
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
+    PromptTemplate = None
+    LLMChain = None
 
 from core.llm_factory import LLMFactory
 from agents.models import AgentSignal

@@ -20,6 +20,15 @@ class SentimentAgentV2:
     Trading logic is DETERMINISTIC Python
     """
     
+    def _signal_to_direction(self, signal: int) -> str:
+        """Convert numeric signal to direction string"""
+        if signal == 1:
+            return "BUY"
+        elif signal == -1:
+            return "SELL"
+        else:
+            return "NEUTRAL"
+    
     def __init__(self):
         self.data_loader = NewsLoader()
         self.feature_engine = SentimentFeatureEngine()
@@ -93,6 +102,9 @@ class SentimentAgentV2:
         # Add agent identifier
         signal_data['agent'] = 'SentimentV2'
         
+        # Add direction to the signal
+        signal_data['direction'] = self._signal_to_direction(signal_data.get('signal', 0))
+        
         return signal_data
 
     def _refresh_news_data(self) -> None:
@@ -124,6 +136,7 @@ class SentimentAgentV2:
         """Return neutral signal"""
         return {
             'signal': 0,
+            'direction': self._signal_to_direction(0),
             'confidence': 0.0,
             'features_used': {},
             'deterministic_reason': reason,

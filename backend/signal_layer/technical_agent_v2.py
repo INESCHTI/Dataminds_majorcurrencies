@@ -25,6 +25,15 @@ class TechnicalAgentV2:
         self.data_loader = TimeSeriesLoader()
         self.feature_engine = TechnicalFeatureEngine()
     
+    def _signal_to_direction(self, signal: int) -> str:
+        """Convert numeric signal to direction string"""
+        if signal == 1:
+            return "BUY"
+        elif signal == -1:
+            return "SELL"
+        else:
+            return "NEUTRAL"
+    
     def generate_signal(self, symbol: str) -> Dict:
         """
         Generate technical signal with real data and logic
@@ -137,6 +146,7 @@ class TechnicalAgentV2:
         
         return {
             'signal': final_signal,
+            'direction': self._signal_to_direction(final_signal),
             'confidence': confidence,
             'features_used': ind,
             'deterministic_reason': '; '.join(reasons) if reasons else 'Mixed signals',
@@ -147,6 +157,7 @@ class TechnicalAgentV2:
         """Return neutral signal"""
         return {
             'signal': 0,
+            'direction': self._signal_to_direction(0),
             'confidence': 0.0,
             'features_used': {},
             'deterministic_reason': reason,

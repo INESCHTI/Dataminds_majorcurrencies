@@ -36,13 +36,13 @@ export default function ApiTestPage() {
         },
         {
             name: 'Freshness Health',
-            endpoint: () => api.monitoring.freshnessHealth(240),
-            description: 'Check data freshness'
+            endpoint: () => api.v2.healthCheck(),
+            description: 'Check system health and agent status'
         },
         {
             name: 'Drift Detection',
-            endpoint: () => api.monitoring.driftDetection(),
-            description: 'Check for model drift'
+            endpoint: () => api.v2.healthCheck(),
+            description: 'Check system health and agent status'
         },
         {
             name: 'Signal Generation',

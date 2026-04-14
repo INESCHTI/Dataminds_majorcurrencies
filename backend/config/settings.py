@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "validation",
     "features",
     "scheduling",
+    "mcp",  # MCP App with auto-start
 ]
 
 MIDDLEWARE = [
@@ -111,6 +112,16 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
+CORS_ALLOWED_HEADERS = [
+    "accept",
+    "accept-language",
+    "content-language",
+    "content-type",
+    "authorization",
 ]
 
 # LLM / Agent settings

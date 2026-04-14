@@ -49,6 +49,15 @@ class GeopoliticalAgentV2:
             ]
         }
     
+    def _signal_to_direction(self, signal: int) -> str:
+        """Convert numeric signal to direction string"""
+        if signal == 1:
+            return "BUY"
+        elif signal == -1:
+            return "SELL"
+        else:
+            return "NEUTRAL"
+    
     def generate_signal(
         self,
         currencies: List[str],
@@ -77,6 +86,7 @@ class GeopoliticalAgentV2:
             if base_currency in self.safe_haven_currencies:
                 return {
                     'signal': 1,  # BUY safe haven
+                    'direction': self._signal_to_direction(1),
                     'confidence': 0.6,
                     'features_used': {'currency_type': 'safe_haven'},
                     'deterministic_reason': f'{base_currency} is a safe-haven currency during uncertainty'
@@ -84,6 +94,7 @@ class GeopoliticalAgentV2:
             elif base_currency in self.risk_on_currencies:
                 return {
                     'signal': 0,  # NEUTRAL for risk currencies
+                    'direction': self._signal_to_direction(0),
                     'confidence': 0.4,
                     'features_used': {'currency_type': 'risk_on'},
                     'deterministic_reason': f'{base_currency} is a risk-on currency, neutral stance'
@@ -91,6 +102,7 @@ class GeopoliticalAgentV2:
             else:
                 return {
                     'signal': 0,
+                    'direction': self._signal_to_direction(0),
                     'confidence': 0.3,
                     'features_used': {},
                     'deterministic_reason': f'Unknown currency {base_currency}, neutral signal'
@@ -110,6 +122,7 @@ class GeopoliticalAgentV2:
         
         return {
             'signal': signal,
+            'direction': self._signal_to_direction(signal),
             'confidence': confidence,
             'features_used': {
                 'geopolitical_score': geopolitical_score,
@@ -119,7 +132,8 @@ class GeopoliticalAgentV2:
             },
             'deterministic_reason': self._generate_reasoning(
                 signal, geopolitical_score, safe_haven_bias, currencies
-            )
+            ),
+            'agent': 'GeopoliticalV2'
         }
     
     def _analyze_geopolitical_content(self, news_df: pd.DataFrame, currencies: List[str]) -> float:

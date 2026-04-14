@@ -46,7 +46,7 @@ class NewsLoader:
                 ORDER BY published_at DESC
                 LIMIT %s
                 """
-                df = pd.read_sql(query, conn, params=(start_time, end_time, limit))
+                df = pd.read_sql_query(query, conn, params=(start_time, end_time, limit))
                 
                 # Filter by currencies in Python if needed
                 if currencies and not df.empty:
@@ -65,7 +65,7 @@ class NewsLoader:
         try:
             with DatabaseManager.get_postgres_connection() as conn:
                 query = "SELECT MAX(published_at) AS last_ts FROM news_articles"
-                df = pd.read_sql(query, conn)
+                df = pd.read_sql_query(query, conn)
                 if df.empty or df.loc[0, 'last_ts'] is None:
                     return None
                 return pd.to_datetime(df.loc[0, 'last_ts']).to_pydatetime()

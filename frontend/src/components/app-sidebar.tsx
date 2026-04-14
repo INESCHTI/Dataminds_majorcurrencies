@@ -34,7 +34,8 @@ import {
     Shield,
     Zap,
     Database,
-    Network
+    Network,
+    Sparkles
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -50,6 +51,9 @@ const navItems = [
 ];
 
 const advancedItems = [
+    { title: "ML Agents", href: "/ml-agents", icon: Brain },
+    { title: "Advanced Features", href: "/advanced-features", icon: Sparkles },
+    { title: "Regime Classification", href: "/dashboard/regime", icon: Activity },
     { title: "LLM Analysis", href: "/dashboard/llm-analysis", icon: Brain },
     { title: "Pattern Recognition", href: "/dashboard/pattern-recognition", icon: Eye },
     { title: "RL Optimization", href: "/dashboard/rl-optimization", icon: Target },

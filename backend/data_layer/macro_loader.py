@@ -21,7 +21,7 @@ class MacroDataLoader:
         end_date: Optional[datetime] = None
     ) -> pd.DataFrame:
         """
-        Load central bank interest rates from macro_indicators
+        Load central bank interest rates from economic_indicators
         
         Returns:
             DataFrame with columns: date, currency, rate
@@ -33,17 +33,38 @@ class MacroDataLoader:
         
         try:
             with DatabaseManager.get_postgres_connection() as conn:
+                # Map series IDs to currencies and indicator types
+                series_mapping = {
+                    'FEDFUNDS': 'USD',
+                    'DFF': 'USD'
+                }
+                
+                # Build query for FRED data
+                currency_series = []
+                for currency in currencies:
+                    if currency == 'USD':
+                        currency_series.extend(['FEDFUNDS', 'DFF'])
+                    # Add more currency mappings as needed
+                
+                if not currency_series:
+                    return pd.DataFrame(columns=['date', 'currency', 'rate'])
+                
                 query = """
-                SELECT date, currency, value as rate
-                FROM macro_indicators
-                WHERE indicator_name = 'interest_rate'
-                AND currency = ANY(%s)
+                SELECT date, value as rate, series_id
+                FROM economic_indicators
+                WHERE series_id = ANY(%s)
                 AND date BETWEEN %s AND %s
-                ORDER BY date, currency
+                ORDER BY date, series_id
                 """
-                df = pd.read_sql(query, conn, params=(currencies, start_date, end_date))
-            return df
-        except Exception:
+                df = pd.read_sql(query, conn, params=(currency_series, start_date, end_date))
+                
+                # Map series_id back to currency
+                df['currency'] = df['series_id'].map(series_mapping)
+                df = df.dropna(subset=['currency'])
+                
+                return df[['date', 'currency', 'rate']]
+        except Exception as e:
+            print(f"Error loading interest rates: {e}")
             return pd.DataFrame(columns=['date', 'currency', 'rate'])
     
     def load_inflation_rates(
@@ -52,7 +73,7 @@ class MacroDataLoader:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None
     ) -> pd.DataFrame:
-        """Load CPI/inflation data from macro_indicators"""
+        """Load CPI/inflation data from economic_indicators"""
         if start_date is None:
             start_date = datetime.now() - timedelta(days=365)
         if end_date is None:
@@ -60,17 +81,37 @@ class MacroDataLoader:
         
         try:
             with DatabaseManager.get_postgres_connection() as conn:
+                # Map series IDs to currencies and indicator types
+                series_mapping = {
+                    'CPIAUCSL': 'USD',
+                }
+                
+                # Build query for FRED data
+                currency_series = []
+                for currency in currencies:
+                    if currency == 'USD':
+                        currency_series.append('CPIAUCSL')
+                    # Add more currency mappings as needed
+                
+                if not currency_series:
+                    return pd.DataFrame(columns=['date', 'currency', 'inflation_rate'])
+                
                 query = """
-                SELECT date, currency, value as inflation_rate
-                FROM macro_indicators
-                WHERE indicator_name = 'inflation_rate'
-                AND currency = ANY(%s)
+                SELECT date, value as inflation_rate, series_id
+                FROM economic_indicators
+                WHERE series_id = ANY(%s)
                 AND date BETWEEN %s AND %s
-                ORDER BY date, currency
+                ORDER BY date, series_id
                 """
-                df = pd.read_sql(query, conn, params=(currencies, start_date, end_date))
-            return df
-        except Exception:
+                df = pd.read_sql(query, conn, params=(currency_series, start_date, end_date))
+                
+                # Map series_id back to currency
+                df['currency'] = df['series_id'].map(series_mapping)
+                df = df.dropna(subset=['currency'])
+                
+                return df[['date', 'currency', 'inflation_rate']]
+        except Exception as e:
+            print(f"Error loading inflation rates: {e}")
             return pd.DataFrame(columns=['date', 'currency', 'inflation_rate'])
     
     def load_gdp_data(
@@ -79,7 +120,7 @@ class MacroDataLoader:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None
     ) -> pd.DataFrame:
-        """Load GDP growth data from macro_indicators"""
+        """Load GDP growth data from economic_indicators"""
         if start_date is None:
             start_date = datetime.now() - timedelta(days=730)
         if end_date is None:
@@ -87,15 +128,35 @@ class MacroDataLoader:
         
         try:
             with DatabaseManager.get_postgres_connection() as conn:
+                # Map series IDs to currencies and indicator types
+                series_mapping = {
+                    'GDP': 'USD',
+                }
+                
+                # Build query for FRED data
+                currency_series = []
+                for currency in currencies:
+                    if currency == 'USD':
+                        currency_series.append('GDP')
+                    # Add more currency mappings as needed
+                
+                if not currency_series:
+                    return pd.DataFrame(columns=['date', 'currency', 'gdp_growth_rate'])
+                
                 query = """
-                SELECT date, currency, value as gdp_growth_rate
-                FROM macro_indicators
-                WHERE indicator_name = 'gdp_growth'
-                AND currency = ANY(%s)
+                SELECT date, value as gdp_growth_rate, series_id
+                FROM economic_indicators
+                WHERE series_id = ANY(%s)
                 AND date BETWEEN %s AND %s
-                ORDER BY date, currency
+                ORDER BY date, series_id
                 """
-                df = pd.read_sql(query, conn, params=(currencies, start_date, end_date))
-            return df
-        except Exception:
+                df = pd.read_sql(query, conn, params=(currency_series, start_date, end_date))
+                
+                # Map series_id back to currency
+                df['currency'] = df['series_id'].map(series_mapping)
+                df = df.dropna(subset=['currency'])
+                
+                return df[['date', 'currency', 'gdp_growth_rate']]
+        except Exception as e:
+            print(f"Error loading GDP data: {e}")
             return pd.DataFrame(columns=['date', 'currency', 'gdp_growth_rate'])

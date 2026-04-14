@@ -64,16 +64,9 @@ class MarketSimulator:
         }
     
     def start_simulation(self):
-        """Start the market simulation in background"""
-        if self.running:
-            return
-        
-        self.running = True
-        simulation_thread = threading.Thread(target=self._run_simulation, daemon=True)
-        simulation_thread.start()
-        
-        logger.info("📈 Market simulation started")
-        logger.info(f"📊 Initial prices: {self.current_prices}")
+        """MARKET SIMULATION DISABLED - Using REAL DATA ONLY"""
+        logger.warning("🚫 Market simulation is DISABLED - configure real data sources (MT5, Alpha Vantage)")
+        return  # Do not start simulation
     
     def stop_simulation(self):
         """Stop the market simulation"""

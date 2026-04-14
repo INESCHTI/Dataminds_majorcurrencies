@@ -11,6 +11,9 @@ urlpatterns = [
     # Test endpoint for debugging
     path('mcp/test/', mcp_test_views.test_endpoint, name='test_endpoint'),
     
+    # System control endpoints
+    path('mcp/ensure_running/', mcp_views.ensure_mcp_running, name='ensure_mcp_running'),
+    
     # MCP Agent Collecteur endpoints
     path('mcp/collecteur/start/', mcp_views.start_collecteur, name='start_collecteur'),
     path('mcp/collecteur/stop/', mcp_views.stop_collecteur, name='stop_collecteur'),

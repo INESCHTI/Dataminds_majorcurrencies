@@ -270,7 +270,7 @@ function SignalLabContent() {
 
                 {/* Final Signal (DSO2.1 + DSO3.1) */}
                 <AnimatePresence>
-                    {signal?.success && (
+                    {signal?.success && signal?.signal && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}

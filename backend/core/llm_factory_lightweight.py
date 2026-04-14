@@ -22,7 +22,7 @@ class LightweightLLMFactory:
     def __init__(self):
         self.huggingface_key = os.getenv('HUGGINGFACE_API_KEY')
         self.models = {
-            'sentiment': 'cardiffnlp/twitter-roberta-base-sentiment-latest',
+            'sentiment': 'nlptown/bert-base-multilingual-uncased-sentiment',
             'classification': 'distilbert-base-uncased-finetuned-sst-2-english',
             'explanation': 't5-small'
         }
@@ -37,21 +37,40 @@ class LightweightLLMFactory:
                 # Fallback to simple rule-based sentiment
                 return self._rule_based_sentiment(text)
             
-            API_URL = "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment-latest"
-            headers = {"Authorization": f"Bearer {self.huggingface_key}"}
+            # Try multiple models in order of preference
+            models_to_try = [
+                'nlptown/bert-base-multilingual-uncased-sentiment',
+                'cardiffnlp/twitter-roberta-base-sentiment-latest',
+                'distilbert-base-uncased-finetuned-sst-2-english'
+            ]
             
-            response = requests.post(API_URL, headers=headers, json={"inputs": text})
+            for model_name in models_to_try:
+                try:
+                    API_URL = f"https://api-inference.huggingface.co/models/{model_name}"
+                    headers = {"Authorization": f"Bearer {self.huggingface_key}"}
+                    
+                    response = requests.post(API_URL, headers=headers, json={"inputs": text})
+                    
+                    if response.status_code == 200:
+                        result = response.json()[0]
+                        logger.info(f"Successfully used model: {model_name}")
+                        return {
+                            'label': result['label'],
+                            'score': result['score'],
+                            'source': 'huggingface',
+                            'model': model_name
+                        }
+                    else:
+                        logger.warning(f"Model {model_name} returned status: {response.status_code}")
+                        continue
+                        
+                except Exception as e:
+                    logger.warning(f"Model {model_name} failed: {e}")
+                    continue
             
-            if response.status_code == 200:
-                result = response.json()[0]
-                return {
-                    'label': result['label'],
-                    'score': result['score'],
-                    'source': 'huggingface'
-                }
-            else:
-                logger.warning(f"HuggingFace API error: {response.status_code}")
-                return self._rule_based_sentiment(text)
+            # If all models fail, fallback to rule-based
+            logger.warning("All HuggingFace models failed, using rule-based sentiment")
+            return self._rule_based_sentiment(text)
                 
         except Exception as e:
             logger.error(f"Sentiment analysis error: {e}")

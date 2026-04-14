@@ -18,6 +18,7 @@ from . import urls_v2
 from . import urls_websocket
 from . import urls_v2_live_data_simple
 from . import urls_mcp
+from . import urls_tactical
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -40,4 +41,5 @@ urlpatterns += [
 # MCP Agent System endpoints
 urlpatterns += [
     path('mcp/', include('api.urls_mcp')),
+    path('tactical/', include('api.urls_tactical')),
 ]

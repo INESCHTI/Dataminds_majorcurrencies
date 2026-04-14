@@ -11,4 +11,5 @@ urlpatterns = [
     path("api/", include("api.urls_v2")),  # V2 Architecture endpoints
     path("api/", include("api.urls_websocket")),  # WebSocket endpoints
     path("api/", include("api.urls_mcp")),  # MCP Agent System endpoints
+    path("api/", include("api.urls_monitoring")),  # Enhanced monitoring endpoints
 ]

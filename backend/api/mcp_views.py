@@ -15,6 +15,43 @@ from mcp_agent_feeder import get_mcp_agent_feeder
 
 @csrf_exempt
 @require_http_methods(["POST"])
+def ensure_mcp_running(request):
+    """Ensure MCP System is running - starts if not"""
+    try:
+        collecteur = get_mcp_agent_collecteur()
+        feeder = get_mcp_agent_feeder()
+        
+        actions_taken = []
+        
+        # Start collecteur if not running
+        if not collecteur.is_running:
+            collecteur.start_collection()
+            actions_taken.append('Started MCP Collecteur')
+        
+        # Start feeder if not running
+        if not feeder.is_running:
+            feeder.start_feeding()
+            actions_taken.append('Started MCP Feeder')
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'collecteur_running': collecteur.is_running,
+                'feeder_running': feeder.is_running,
+                'actions_taken': actions_taken,
+                'timestamp': timezone.now().isoformat()
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def start_collecteur(request):
     """Start MCP Agent Collecteur"""
     try:

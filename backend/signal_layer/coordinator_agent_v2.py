@@ -24,6 +24,7 @@ from signal_layer.technical_agent_v2 import TechnicalAgentV2
 from signal_layer.macro_agent_v2 import MacroAgentV2
 from signal_layer.sentiment_agent_v2 import SentimentAgentV2
 from signal_layer.geopolitical_agent_v2 import GeopoliticalAgentV2
+from signal_layer.orchestrator_agent import OrchestratorAgent, AgentRoutingDecision
 from monitoring.performance_tracker import PerformanceTracker
 from data_layer.signal_recorder import record_signal, update_market_data
 import logging
@@ -53,6 +54,7 @@ class CoordinatorAgentV2:
         self.geopolitical_agent = GeopoliticalAgentV2()
         self.performance_tracker = PerformanceTracker()
         self.sophisticated_reasoning = get_sophisticated_reasoning()
+        self.orchestrator = OrchestratorAgent()  # LLM-based query router
         self.correlation_engine = None  # Initialize correlation engine
         
         # Default agent weights (deterministic)
@@ -105,6 +107,15 @@ class CoordinatorAgentV2:
         try:
             # Get volatility for macro agent
             price_volatility = self._estimate_volatility(symbol)
+            
+            # Extract currencies from symbol (e.g., EURUSD -> base=EUR, quote=USD)
+            if len(symbol) == 6:  # EURUSD, GBPUSD, etc.
+                base_currency = symbol[:3]
+                quote_currency = symbol[3:]
+            else:
+                base_currency = symbol[:3]
+                quote_currency = symbol[-3:]
+            
             macro_signal = self.macro_agent.generate_signal(
                 base_currency,
                 quote_currency,
@@ -166,13 +177,26 @@ class CoordinatorAgentV2:
             final_signal, agent_signals, weights, conflicts
         )
         
-        # Step 6: Record signal
+        # Step 6: Transform agent_signals to agent_votes for frontend compatibility
+        agent_votes = {}
+        for name, signal_data in agent_signals.items():
+            agent_votes[name] = {
+                'signal': signal_data.get('signal', 0),
+                'direction': signal_data.get('direction', 'NEUTRAL'),
+                'confidence': signal_data.get('confidence', 0.0),
+                'features_used': signal_data.get('features_used', {}),
+                'deterministic_reason': signal_data.get('deterministic_reason', ''),
+                'agent': signal_data.get('agent', name)
+            }
+        
+        # Step 7: Record signal
         try:
             signal_data = {
                 'symbol': symbol,
                 'direction': final_signal,
                 'confidence': final_confidence,
                 'agent_signals': agent_signals,
+                'agent_votes': agent_votes,  # Add agent_votes for frontend compatibility
                 'weights_used': weights,
                 'explanation': explanation
             }
@@ -181,19 +205,34 @@ class CoordinatorAgentV2:
             logger.error(f"Signal recording failed: {e}")
             signal_id = None
         
+        # Step 7: Create nested signal object for frontend compatibility
+        nested_signal = {
+            'direction': final_signal,
+            'confidence': final_confidence,
+            'agent_votes': agent_votes,
+            'weights': weights,
+            'market_regime': regime,
+            'conflicts': conflicts,
+            'reasoning': explanation,
+            'timestamp': datetime.now().isoformat(),
+            'signal_id': signal_id
+        }
+        
         execution_time = (datetime.now() - start_time).total_seconds()
         
         return {
             'final_signal': final_signal,
             'confidence': final_confidence,
             'agent_signals': agent_signals,
+            'agent_votes': agent_votes,  # Add agent_votes for frontend compatibility
             'weights_used': weights,
             'conflicts_detected': conflicts,
             'explanation': explanation,
             'signal_id': signal_id,
             'execution_time': execution_time,
             'market_regime': regime,
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'signal': nested_signal  # Add nested signal object for frontend compatibility
         }
     
     def generate_and_record_signal(self, pair: str, timeframe: str = 'H1') -> Dict:
@@ -230,6 +269,310 @@ class CoordinatorAgentV2:
         signal_data['signal_id'] = signal_id
         
         return signal_data
+    
+    def generate_orchestrated_signal(
+        self, 
+        symbol: str, 
+        base_currency: str, 
+        quote_currency: str,
+        query: Optional[str] = None,
+        context: Optional[Dict] = None
+    ) -> Dict:
+        """
+        Generate trading signal using INTELLIGENT ORCHESTRATION
+        
+        NEW ARCHITECTURE:
+        1. Orchestrator Agent (LLM as Judge) analyzes query
+        2. Orchestrator routes to ONLY relevant agents
+        3. Coordinator aggregates selected agent signals
+        4. Final decision with explanation
+        
+        Example routing:
+        - "EURUSD broke resistance" → TechnicalAgent (primary) + SentimentAgent (secondary)
+        - "Fed raised rates" → MacroAgent (primary) + GeopoliticalAgent (secondary)
+        - "Election in France" → GeopoliticalAgent (primary) + MacroAgent (secondary)
+        - "Should I buy EURUSD?" → All agents (combined analysis)
+        
+        Args:
+            symbol: Currency pair (e.g., "EURUSD")
+            base_currency: Base currency (e.g., "EUR")
+            quote_currency: Quote currency (e.g., "USD")
+            query: Optional user query for context-aware routing
+            context: Additional context for orchestration
+            
+        Returns:
+            Dict with final signal, agent votes, orchestration metadata
+        """
+        start_time = datetime.now()
+        
+        # Step 1: ORCHESTRATOR - LLM as Judge decides which agents to invoke
+        if query:
+            routing_decision = self.orchestrator.analyze_and_route(
+                query=query,
+                symbol=symbol,
+                context=context
+            )
+        else:
+            # Default: run all agents if no query provided
+            routing_decision = AgentRoutingDecision(
+                query_category='combined',
+                primary_agents=['technical', 'macro', 'sentiment', 'geopolitical'],
+                secondary_agents=[],
+                reasoning='No query provided - running all agents for comprehensive analysis',
+                confidence=1.0,
+                urgency_level='normal',
+                expected_complexity='medium'
+            )
+        
+        logger.info(
+            f"Orchestrator routing: {routing_decision.query_category.value} | "
+            f"Primary: {routing_decision.primary_agents} | "
+            f"Confidence: {routing_decision.confidence:.0%}"
+        )
+        
+        # Step 2: Collect signals from SELECTED agents only
+        agent_signals = {}
+        agent_mapping = {
+            'technical': ('technical', self.technical_agent, self._get_technical_signal),
+            'macro': ('macro', self.macro_agent, self._get_macro_signal),
+            'sentiment': ('sentiment', self.sentiment_agent, self._get_sentiment_signal),
+            'geopolitical': ('geopolitical', self.geopolitical_agent, self._get_geopolitical_signal)
+        }
+        
+        # Run primary agents (required)
+        for agent_key in routing_decision.primary_agents:
+            if agent_key in agent_mapping:
+                agent_name, agent_instance, signal_func = agent_mapping[agent_key]
+                try:
+                    signal_data = signal_func(symbol, base_currency, quote_currency)
+                    agent_signals[agent_name] = signal_data
+                    logger.info(f"Primary agent {agent_key} completed: {signal_data.get('direction', 'NEUTRAL')}")
+                except Exception as e:
+                    logger.error(f"Primary agent {agent_key} failed: {e}")
+                    agent_signals[agent_name] = self._get_fallback_signal(agent_name)
+        
+        # Run secondary agents if time permits (optional enrichment)
+        # In production, this could be async or time-boxed
+        for agent_key in routing_decision.secondary_agents:
+            if agent_key in agent_mapping and agent_key not in routing_decision.primary_agents:
+                agent_name, agent_instance, signal_func = agent_mapping[agent_key]
+                try:
+                    signal_data = signal_func(symbol, base_currency, quote_currency)
+                    agent_signals[agent_name] = signal_data
+                    logger.info(f"Secondary agent {agent_key} completed: {signal_data.get('direction', 'NEUTRAL')}")
+                except Exception as e:
+                    logger.warning(f"Secondary agent {agent_key} failed (non-critical): {e}")
+        
+        # Step 3: AGGREGATION - Combine selected agent signals
+        weights = self._calculate_orchestrated_weights(
+            agent_signals, 
+            routing_decision.primary_agents,
+            routing_decision.secondary_agents
+        )
+        
+        # Check for conflicts
+        conflicts = self._detect_conflicts(agent_signals)
+        
+        # Detect market regime
+        technical_signal = agent_signals.get('technical', {})
+        regime = self._detect_market_regime(
+            technical_signal, 
+            self._estimate_volatility(symbol)
+        )
+        
+        # Aggregate signals
+        final_signal, final_confidence = self._aggregate_signals(agent_signals, weights, regime)
+        
+        # Step 4: Generate explanation including orchestration reasoning
+        explanation = self._generate_orchestrated_explanation(
+            final_signal, 
+            agent_signals, 
+            weights, 
+            conflicts,
+            routing_decision
+        )
+        
+        # Transform to frontend format
+        agent_votes = {}
+        for name, signal_data in agent_signals.items():
+            agent_votes[name] = {
+                'signal': signal_data.get('signal', 0),
+                'direction': signal_data.get('direction', 'NEUTRAL'),
+                'confidence': signal_data.get('confidence', 0.0),
+                'features_used': signal_data.get('features_used', {}),
+                'deterministic_reason': signal_data.get('deterministic_reason', ''),
+                'agent': signal_data.get('agent', name)
+            }
+        
+        # Record signal
+        try:
+            signal_data = {
+                'symbol': symbol,
+                'direction': final_signal,
+                'confidence': final_confidence,
+                'agent_signals': agent_signals,
+                'agent_votes': agent_votes,
+                'weights': weights,
+                'explanation': explanation
+            }
+            signal_id = record_signal(signal_data)
+        except Exception as e:
+            logger.error(f"Signal recording failed: {e}")
+            signal_id = None
+        
+        # Build response
+        execution_time = (datetime.now() - start_time).total_seconds()
+        
+        return {
+            'final_signal': final_signal,
+            'direction': 'BUY' if final_signal == 1 else 'SELL' if final_signal == -1 else 'NEUTRAL',
+            'confidence': final_confidence,
+            'agent_signals': agent_signals,
+            'agent_votes': agent_votes,
+            'weights_used': weights,
+            'conflicts_detected': conflicts,
+            'explanation': explanation,
+            'signal_id': signal_id,
+            'execution_time': execution_time,
+            'market_regime': regime,
+            'timestamp': datetime.now().isoformat(),
+            # Orchestration metadata
+            'orchestration': {
+                'category': routing_decision.query_category.value,
+                'primary_agents': routing_decision.primary_agents,
+                'secondary_agents': routing_decision.secondary_agents,
+                'routing_confidence': routing_decision.confidence,
+                'routing_reasoning': routing_decision.reasoning,
+                'urgency_level': routing_decision.urgency_level,
+                'complexity': routing_decision.expected_complexity,
+                'agents_invoked': len(agent_signals),
+                'total_available': len(self.AVAILABLE_AGENTS) if hasattr(self, 'AVAILABLE_AGENTS') else 4
+            }
+        }
+    
+    def _get_technical_signal(self, symbol: str, base: str, quote: str) -> Dict:
+        """Get signal from technical agent"""
+        return self.technical_agent.generate_signal(symbol)
+    
+    def _get_macro_signal(self, symbol: str, base: str, quote: str) -> Dict:
+        """Get signal from macro agent"""
+        volatility = self._estimate_volatility(symbol)
+        return self.macro_agent.generate_signal(base, quote, volatility)
+    
+    def _get_sentiment_signal(self, symbol: str, base: str, quote: str) -> Dict:
+        """Get signal from sentiment agent"""
+        return self.sentiment_agent.generate_signal([base, quote])
+    
+    def _get_geopolitical_signal(self, symbol: str, base: str, quote: str) -> Dict:
+        """Get signal from geopolitical agent"""
+        return self.geopolitical_agent.generate_signal(symbol)
+    
+    def _get_fallback_signal(self, agent_name: str) -> Dict:
+        """Return neutral signal when agent fails"""
+        return {
+            'signal': 0,
+            'direction': 'NEUTRAL',
+            'confidence': 0.0,
+            'features_used': {},
+            'deterministic_reason': f'{agent_name} agent unavailable',
+            'agent': agent_name
+        }
+    
+    def _calculate_orchestrated_weights(
+        self, 
+        agent_signals: Dict, 
+        primary_agents: List[str],
+        secondary_agents: List[str]
+    ) -> Dict[str, float]:
+        """
+        Calculate weights for orchestrated agents
+        Primary agents get higher weights, secondary get lower
+        """
+        base_weights = {
+            'technical': 0.30,
+            'macro': 0.25,
+            'sentiment': 0.20,
+            'geopolitical': 0.25
+        }
+        
+        # Adjust weights based on orchestration priority
+        weights = {}
+        total_weight = 0
+        
+        for agent_key in agent_signals.keys():
+            base = base_weights.get(agent_key, 0.25)
+            
+            # Boost primary agents
+            if agent_key in primary_agents:
+                boost = 1.5
+            elif agent_key in secondary_agents:
+                boost = 0.7
+            else:
+                boost = 1.0
+            
+            adjusted = base * boost
+            weights[agent_key] = adjusted
+            total_weight += adjusted
+        
+        # Normalize
+        if total_weight > 0:
+            weights = {k: v / total_weight for k, v in weights.items()}
+        
+        return weights
+    
+    def _generate_orchestrated_explanation(
+        self,
+        final_signal: int,
+        agent_signals: Dict,
+        weights: Dict,
+        conflicts: bool,
+        routing_decision: AgentRoutingDecision
+    ) -> str:
+        """Generate explanation including orchestration details"""
+        
+        signal_map = {1: 'BUY', -1: 'SELL', 0: 'NEUTRAL'}
+        signal_str = signal_map.get(final_signal, 'NEUTRAL')
+        
+        # Build orchestration summary
+        lines = [
+            f"=== ORCHESTRATED ANALYSIS ===",
+            f"",
+            f"Query Category: {routing_decision.query_category.value.upper()}",
+            f"Routing Confidence: {routing_decision.confidence:.0%}",
+            f"Urgency: {routing_decision.urgency_level}",
+            f"",
+            f"Agents Selected:",
+        ]
+        
+        # Primary agents
+        for agent_key in routing_decision.primary_agents:
+            if agent_key in agent_signals:
+                data = agent_signals[agent_key]
+                direction = data.get('direction', 'NEUTRAL')
+                conf = data.get('confidence', 0) * 100
+                weight = weights.get(agent_key, 0) * 100
+                lines.append(f"  ★ {agent_key.upper()}: {direction} ({conf:.0f}% conf, {weight:.0f}% weight) [PRIMARY]")
+        
+        # Secondary agents
+        for agent_key in routing_decision.secondary_agents:
+            if agent_key in agent_signals:
+                data = agent_signals[agent_key]
+                direction = data.get('direction', 'NEUTRAL')
+                conf = data.get('confidence', 0) * 100
+                weight = weights.get(agent_key, 0) * 100
+                lines.append(f"  ○ {agent_key.upper()}: {direction} ({conf:.0f}% conf, {weight:.0f}% weight) [secondary]")
+        
+        lines.extend([
+            f"",
+            f"Routing Reasoning: {routing_decision.reasoning}",
+            f"",
+            f"=== FINAL DECISION: {signal_str} ==="
+        ])
+        
+        if conflicts:
+            lines.append("⚠️ Conflicts detected between agents - confidence reduced")
+        
+        return "\n".join(lines)
     
     def _calculate_dynamic_weights(self, agent_signals: Dict) -> Dict[str, float]:
         """

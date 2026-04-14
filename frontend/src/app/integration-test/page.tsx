@@ -64,7 +64,7 @@ export default function IntegrationTestPage() {
 
     // Test 2: Multi-Agent Signal Generation
     try {
-      const signal = await api.v2.generateSignal({ pair: 'EURUSD' });
+      const signal = await api.v2.generateSignal('EURUSD');
       newTests[1] = {
         name: 'Multi-Agent Signal Generation',
         status: 'success',

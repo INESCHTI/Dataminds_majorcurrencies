@@ -1,12 +1,19 @@
 """
 PHASE 3: Macro Agent
-Analyzes macro-economic features to generate trading signals
+Analyzes macroeconomic indicators to generate trading signals
 """
 from typing import Dict, Optional
 from datetime import datetime, timedelta
 
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+# Import conditionnel pour éviter les erreurs
+try:
+    from langchain.prompts import PromptTemplate
+    from langchain.chains import LLMChain
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
+    PromptTemplate = None
+    LLMChain = None
 
 from agents.base_agent import BaseAgent, AgentOutput
 from features.models import MacroFeatures

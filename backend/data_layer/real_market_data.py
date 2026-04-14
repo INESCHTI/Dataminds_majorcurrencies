@@ -54,7 +54,7 @@ class RealMarketDataFetcher:
             
             if 'Time Series (Daily)' not in data:
                 logger.error(f"Alpha Vantage API error: {data}")
-                return self._generate_realistic_ohlcv(pair, days)
+                return pd.DataFrame()  # Return empty DataFrame - NO FAKE DATA
             
             # Parse the data
             time_series = data['Time Series (Daily)']
@@ -82,71 +82,7 @@ class RealMarketDataFetcher:
             
         except Exception as e:
             logger.error(f"Error fetching real data for {pair}: {e}")
-            return self._generate_realistic_ohlcv(pair, days)
-    
-    def _generate_realistic_ohlcv(self, pair: str, days: int) -> pd.DataFrame:
-        """
-        Generate realistic OHLCV data based on real market characteristics
-        """
-        import numpy as np
-        
-        # Base prices for each pair
-        base_prices = {
-            'EURUSD': 1.0850,
-            'GBPUSD': 1.2650,
-            'USDJPY': 149.50,
-            'USDCHF': 0.8820,
-            'AUDUSD': 0.6520,
-            'USDCAD': 1.3580
-        }
-        
-        # Daily volatility characteristics
-        volatilities = {
-            'EURUSD': 0.008,  # 0.8% daily
-            'GBPUSD': 0.010,  # 1.0% daily
-            'USDJPY': 0.012,  # 1.2% daily
-            'USDCHF': 0.006,  # 0.6% daily
-            'AUDUSD': 0.015,  # 1.5% daily
-            'USDCAD': 0.009   # 0.9% daily
-        }
-        
-        base_price = base_prices.get(pair, 1.0)
-        daily_vol = volatilities.get(pair, 0.01)
-        
-        ohlcv_data = []
-        current_price = base_price
-        
-        for i in range(days):
-            date = datetime.now() - timedelta(days=days-i)
-            
-            # Generate realistic price movement
-            daily_change = np.random.normal(0, daily_vol)
-            
-            # Calculate OHLC
-            open_price = current_price
-            close_price = open_price * (1 + daily_change)
-            
-            # High and low within the day
-            high_price = max(open_price, close_price) * (1 + abs(np.random.normal(0, daily_vol * 0.3)))
-            low_price = min(open_price, close_price) * (1 - abs(np.random.normal(0, daily_vol * 0.3)))
-            
-            # Volume (in millions for forex)
-            volume = np.random.lognormal(10, 1)  # Log-normal distribution
-            
-            ohlcv_data.append({
-                'datetime': date,
-                'open': open_price,
-                'high': high_price,
-                'low': low_price,
-                'close': close_price,
-                'volume': int(volume)
-            })
-            
-            current_price = close_price
-        
-        df = pd.DataFrame(ohlcv_data)
-        logger.info(f"📊 Generated realistic OHLCV data for {pair}")
-        return df
+            return pd.DataFrame()  # Return empty DataFrame - NO FAKE DATA
     
     def store_to_influxdb(self, df: pd.DataFrame, pair: str):
         """

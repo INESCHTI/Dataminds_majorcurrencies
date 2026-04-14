@@ -250,7 +250,7 @@ class SignalRecorder:
                        AVG(CASE WHEN was_correct THEN 1 ELSE 0 END) as win_rate,
                        AVG(pnl) as avg_pnl,
                        MAX(pnl) as max_drawdown,
-                       STD(pnl) as pnl_std
+                       STDDEV_SAMP(pnl) as pnl_std
                 FROM agent_performance_log 
                 WHERE created_at >= NOW() - INTERVAL '%s days'
                 GROUP BY agent_name

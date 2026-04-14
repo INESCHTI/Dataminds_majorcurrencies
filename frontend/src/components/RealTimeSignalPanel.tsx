@@ -213,16 +213,16 @@ export default function RealTimeSignalPanel() {
                             {/* Signal Summary */}
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    {getSignalIcon(latestSignal.signal.direction)}
+                                    {getSignalIcon(latestSignal.direction)}
                                     <div>
-                                        <div className="font-semibold">{latestSignal.signal.direction}</div>
+                                        <div className="font-semibold">{latestSignal.direction}</div>
                                         <div className="text-sm text-muted-foreground">
-                                            Confidence: {(latestSignal.signal.confidence * 100).toFixed(1)}%
+                                            Confidence: {(latestSignal.confidence * 100).toFixed(1)}%
                                         </div>
                                     </div>
                                 </div>
-                                <Badge className={getSignalColor(latestSignal.signal.direction)}>
-                                    ID: {latestSignal.signal.signal_id}
+                                <Badge className={getSignalColor(latestSignal.direction)}>
+                                    ID: {latestSignal.signal_id}
                                 </Badge>
                             </div>
 

@@ -157,6 +157,88 @@ class TradingSignalV2ViewSet(viewsets.ViewSet):
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'])
+    def generate_orchestrated_signal(self, request):
+        """
+        Generate trading signal with INTELLIGENT ORCHESTRATION
+        
+        LLM acts as JUDGE to route query to relevant agents only
+        
+        POST /api/v2/signals/generate_orchestrated_signal/
+        Body: {
+            "pair": "EURUSD",
+            "query": "EURUSD broke resistance on Fed rate hike news",
+            "context": {"timeframe": "4H", "urgency": "high"}
+        }
+        
+        Example routing:
+        - "broke resistance" → TechnicalAgent (primary)
+        - "Fed rate hike" → MacroAgent (primary) + SentimentAgent (secondary)
+        - "election in France" → GeopoliticalAgent (primary)
+        """
+        # Parse request data
+        if isinstance(request.data, str):
+            try:
+                data = json.loads(request.data)
+            except json.JSONDecodeError:
+                data = {}
+        else:
+            data = request.data
+        
+        pair = data.get('pair', 'EURUSD')
+        query = data.get('query', '')
+        context = data.get('context', {})
+        
+        # Parse pair
+        if len(pair) == 6:
+            base = pair[:3]
+            quote = pair[3:6]
+        else:
+            base = 'EUR'
+            quote = 'USD'
+        
+        # Safety check
+        safety_check = self.safety_monitor.should_allow_signal(pair)
+        if not safety_check['allowed']:
+            return Response({
+                'success': False,
+                'signal_generated': False,
+                'reason': safety_check['reason'],
+                'safety_checks': safety_check
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Generate orchestrated signal
+        try:
+            result = self.coordinator.generate_orchestrated_signal(
+                symbol=pair,
+                base_currency=base,
+                quote_currency=quote,
+                query=query,
+                context=context
+            )
+            
+            return Response({
+                'success': True,
+                'signal': {
+                    'direction': result['direction'],
+                    'confidence': result['confidence'],
+                    'weighted_score': result['final_signal'],
+                    'reasoning': result['explanation'],
+                    'agent_votes': result['agent_votes'],
+                    'market_regime': result['market_regime']
+                },
+                'orchestration': result['orchestration'],
+                'execution_time': result['execution_time'],
+                'timestamp': result['timestamp']
+            })
+        
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': str(e),
+                'message': 'Orchestrated signal generation failed'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PerformanceMonitoringViewSet(viewsets.ViewSet):

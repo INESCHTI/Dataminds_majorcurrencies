@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
         source: '/api/v2/:path*',
         destination: 'http://localhost:8000/api/v2/:path*',
       },
+      {
+        source: '/api/mcp/:path*',
+        destination: 'http://localhost:8000/api/mcp/:path*',
+      },
     ]
   },
 };

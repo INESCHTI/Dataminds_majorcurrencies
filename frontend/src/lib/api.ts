@@ -146,7 +146,7 @@ export const api = {
             fetcher(`/monitoring/freshness_health/?target_minutes=${targetMinutes}`),
         
         generateSignal: async (pair: string) => {
-            const res = await fetchWithTimeout(`${API_BASE}/v2-signals/generate_signal/`, {
+            const res = await fetchWithTimeout(`${API_BASE}/test/generate_signal`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ pair }),
@@ -155,6 +155,24 @@ export const api = {
             if (!res.ok) throw new Error(`API error: ${res.status}`);
             return res.json();
         },
+    },
+
+    // Tactical Analysis endpoints
+    tactical: {
+        multitimeframeSignal: (symbol: string) =>
+            postFetcher('/tactical/multitimeframe_signal/', { symbol }),
+        
+        generateTacticalReport: (includePositions: boolean = true) =>
+            postFetcher('/tactical/generate_tactical_report/', { include_positions: includePositions }),
+        
+        mt5Status: () =>
+            fetcher('/tactical/mt5_status/'),
+        
+        startMt5Service: () =>
+            postFetcher('/tactical/start_mt5_service/'),
+        
+        stopMt5Service: () =>
+            postFetcher('/tactical/stop_mt5_service/'),
     },
 
     // MCP Agent System endpoints

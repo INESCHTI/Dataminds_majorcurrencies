@@ -37,6 +37,8 @@ urlpatterns = [
     path('', include(router.urls)),
     # Fast signal generation endpoint
     path('v2-signals-fast/generate_signal/', generate_signal_fast, name='generate-signal-fast'),
+    # Orchestrated signal generation (LLM as Judge)
+    path('v2-signals/generate_orchestrated_signal/', TradingSignalV2ViewSet.as_view({'post': 'generate_orchestrated_signal'}), name='generate-orchestrated-signal'),
     # Advanced features endpoints
     path('llm/sample_statements/', llm_sample_statements),
     path('llm/analyze_multiple_statements/', llm_analyze_multiple_statements),

@@ -37,11 +37,31 @@ export function MCPControlPanel() {
 
   useEffect(() => {
     checkSystemStatus();
+    ensureMcpRunning(); // Ensure MCP is running on load
     if (autoRefresh) {
       const interval = setInterval(checkSystemStatus, 3000);
       return () => clearInterval(interval);
     }
   }, [autoRefresh]);
+
+  const ensureMcpRunning = async () => {
+    try {
+      // Check if MCP is running, start if not
+      const response = await fetch('/api/mcp/ensure_running', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      if (result.success && result.data.actions_taken.length > 0) {
+        console.log('MCP System auto-started:', result.data.actions_taken);
+        setTimeout(checkSystemStatus, 2000); // Check status after start
+      }
+    } catch (error) {
+      console.error('Failed to ensure MCP running:', error);
+    }
+  };
 
   const checkSystemStatus = async () => {
     try {
