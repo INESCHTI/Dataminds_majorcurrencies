@@ -63,6 +63,7 @@ NEWSAPI_KEY = os.getenv("NEWSAPI_KEY", "")
 NEWS_REFRESH_SECONDS = int(os.getenv("NEWS_REFRESH_SECONDS", "60"))
 EXPLANATION_CACHE_TTL_SECONDS = int(os.getenv("EXPLANATION_CACHE_TTL_SECONDS", "900"))
 DECISION_TELEMETRY_MAX = int(os.getenv("DECISION_TELEMETRY_MAX", "5000"))
+FALLBACK_TICK_CACHE_TTL_SECONDS = int(os.getenv("FALLBACK_TICK_CACHE_TTL_SECONDS", "20"))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
@@ -137,6 +138,8 @@ price_cache: Dict[str, Dict] = {}
 tick_counter = 0
 last_tick_meta: Dict[str, Dict[str, float]] = {}
 last_news_refresh_ts: int = 0
+fallback_tick_cache: Dict[str, Dict] = {}
+fallback_tick_cache_ts: int = 0
 APP_START_UTC = datetime.now(timezone.utc)
 
 
@@ -670,6 +673,99 @@ def get_live_ticks() -> Dict:
         return {}
 
 
+def get_fallback_ticks_from_influx() -> Dict:
+    """Build synthetic bid/ask ticks from the latest stored 1H candle close per symbol."""
+    global fallback_tick_cache, fallback_tick_cache_ts
+
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+    if fallback_tick_cache and (now_ts - fallback_tick_cache_ts) < FALLBACK_TICK_CACHE_TTL_SECONDS:
+        # Keep fallback prices cached, but refresh timestamp so LIVE/1S charts can advance.
+        return {
+            sym: {**tick, "time": now_ts}
+            for sym, tick in fallback_tick_cache.items()
+        }
+
+    if not status.get("influxdb") or not influx_query_api:
+        return {}
+
+    fallback: Dict[str, Dict] = {}
+    try:
+        for sym in SYMBOLS:
+            query = f'''
+            from(bucket: "{INFLUXDB_BUCKET}")
+              |> range(start: -365d)
+              |> filter(fn: (r) => r._measurement == "forex_prices")
+              |> filter(fn: (r) => r.symbol == "{sym}")
+              |> filter(fn: (r) => r.timeframe == "1H")
+              |> filter(fn: (r) => r._field == "close")
+              |> last()
+            '''
+
+            tables = influx_query_api.query(query)
+            latest_close: Optional[float] = None
+            latest_time: Optional[int] = None
+
+            for table in tables:
+                for rec in table.records:
+                    try:
+                        value = float(rec.get_value())
+                        ts = int(rec.get_time().timestamp())
+                    except Exception:
+                        continue
+                    if value > 0:
+                        latest_close = value
+                        latest_time = ts
+
+            if latest_close is None or latest_time is None:
+                continue
+
+            px = round(float(latest_close), 5)
+            fallback[sym] = {
+                "bid": px,
+                "ask": px,
+                "spread": 0.0,
+                "time": now_ts,
+                "source_time": int(latest_time),
+                "stale": True,
+                "source": "influx_fallback",
+            }
+
+        if fallback:
+            fallback_tick_cache = fallback
+            fallback_tick_cache_ts = now_ts
+
+        return {
+            sym: {**tick, "time": now_ts}
+            for sym, tick in fallback.items()
+        }
+    except Exception as e:
+        logger.warning(f"Fallback tick query failed: {e}")
+        return {}
+
+
+def build_synthetic_1s_candles(price: float, start_ts: int, end_ts: int, limit: int) -> List[Dict]:
+    """Create flat 1-second candles from a fallback price when no real ticks exist."""
+    if price <= 0 or end_ts < start_ts:
+        return []
+
+    safe_limit = max(1, min(int(limit or 1), 5000))
+    first_ts = max(start_ts, end_ts - safe_limit + 1)
+
+    candles: List[Dict] = []
+    for ts in range(first_ts, end_ts + 1):
+        candles.append(
+            {
+                "time": int(ts),
+                "open": price,
+                "high": price,
+                "low": price,
+                "close": price,
+                "volume": 0.0,
+            }
+        )
+    return candles
+
+
 def get_signal(symbol: str, timeframe: str = "1H") -> Dict:
     """Run Technical Agent inference."""
     base = {
@@ -703,6 +799,13 @@ def get_signal(symbol: str, timeframe: str = "1H") -> Dict:
             end_ts,
             max_preagg_lookback_days=None,
         )
+
+        if not candles and eval_timeframe == "1S":
+            fallback_ticks = get_fallback_ticks_from_influx()
+            fallback_tick = (fallback_ticks or {}).get(symbol) or {}
+            fallback_bid = float(fallback_tick.get("bid") or 0.0)
+            if fallback_bid > 0:
+                candles = build_synthetic_1s_candles(fallback_bid, start_ts, end_ts, min(1000, lookback_seconds))
         
         if not candles:
             return {**base, "signal": "N/A", "confidence": 0, "agent": "Technical",
@@ -2907,6 +3010,21 @@ async def _tick_broadcaster():
                 
                 ws_clients -= dead
             else:
+                fallback_ticks = await asyncio.to_thread(get_fallback_ticks_from_influx)
+                if fallback_ticks:
+                    price_cache = fallback_ticks
+
+                if price_cache and ws_clients:
+                    msg = json.dumps({"type": "ticks", "data": price_cache})
+                    dead = set()
+                    for ws in ws_clients.copy():
+                        try:
+                            await ws.send_text(msg)
+                        except Exception as e:
+                            logger.warning(f"WS send error: {e}")
+                            dead.add(ws)
+                    ws_clients -= dead
+
                 logger.warning("⚠️ No ticks received from MT5")
                 
         except asyncio.CancelledError:
@@ -3505,6 +3623,14 @@ async def api_prices(
                 len(mt5_data),
                 len(data),
             )
+
+    if timeframe == "1S" and not data:
+        fallback_ticks = await asyncio.to_thread(get_fallback_ticks_from_influx)
+        fallback_tick = (fallback_ticks or {}).get(symbol) or {}
+        fallback_bid = float(fallback_tick.get("bid") or 0.0)
+        if fallback_bid > 0:
+            data = build_synthetic_1s_candles(fallback_bid, start_ts, end_ts, limit)
+            logger.info("Using synthetic 1S fallback candles for %s: %s", symbol, len(data))
     
     # Limit results
     data = data[-limit:] if len(data) > limit else data
@@ -3678,17 +3804,40 @@ async def api_news_explain(body: ExplainNewsRequest):
 @app.get("/api/ticks")
 async def api_ticks():
     """Snapshot of latest cached ticks."""
+    global price_cache
+    if price_cache:
+        # Refresh fallback timestamps so clients keep receiving progressing LIVE/1S points.
+        if all(isinstance(v, dict) and v.get("source") == "influx_fallback" for v in price_cache.values()):
+            refreshed = await asyncio.to_thread(get_fallback_ticks_from_influx)
+            if refreshed:
+                price_cache = refreshed
+        return price_cache
+
+    fallback = await asyncio.to_thread(get_fallback_ticks_from_influx)
+    if fallback:
+        price_cache = fallback
     return price_cache
 
 
 @app.websocket("/ws/prices")
 async def ws_prices(websocket: WebSocket):
+    global price_cache
     await websocket.accept()
     ws_clients.add(websocket)
     logger.info(f"✅ WS client connected ({len(ws_clients)} total)")
     try:
+        if price_cache and all(isinstance(v, dict) and v.get("source") == "influx_fallback" for v in price_cache.values()):
+            refreshed = await asyncio.to_thread(get_fallback_ticks_from_influx)
+            if refreshed:
+                price_cache = refreshed
+
         if price_cache:
             await websocket.send_text(json.dumps({"type": "ticks", "data": price_cache}))
+        else:
+            fallback = await asyncio.to_thread(get_fallback_ticks_from_influx)
+            if fallback:
+                price_cache = fallback
+                await websocket.send_text(json.dumps({"type": "ticks", "data": price_cache}))
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:

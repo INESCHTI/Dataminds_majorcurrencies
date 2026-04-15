@@ -86,5 +86,93 @@
       "decision_timestamp": "2026-03-26T21:27:03.522271+00:00",
       "fallback_used": false
     }
+  },
+  {
+    "id": "47946caa-fb6e-493d-b53f-0a195cbdea48",
+    "session_id": "sess_1774984364805_qsu4nk",
+    "symbol": "EURUSD",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.1583,
+    "opened_at": "2026-04-01T07:59:34.860846+00:00",
+    "status": "OPEN",
+    "closed_at": null,
+    "close_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "HOLD",
+      "global_confidence": 0.150719,
+      "decision_timestamp": "2026-04-01T07:59:34.848776+00:00",
+      "fallback_used": true
+    }
+  },
+  {
+    "id": "73572290-7b94-449b-9f6e-6fadb5ff3418",
+    "session_id": "sess_1774984364805_qsu4nk",
+    "symbol": "EURUSD",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.15884,
+    "opened_at": "2026-04-01T08:05:49.738897+00:00",
+    "status": "OPEN",
+    "closed_at": null,
+    "close_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "SELL",
+      "global_confidence": 0.982063,
+      "decision_timestamp": "2026-04-01T08:05:49.384817+00:00",
+      "fallback_used": false
+    }
+  },
+  {
+    "id": "00589273-5f48-4a82-b787-e94ee3e4c2e6",
+    "session_id": "sess_1774984364805_qsu4nk",
+    "symbol": "EURUSD",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.15884,
+    "opened_at": "2026-04-01T08:05:54.741234+00:00",
+    "status": "OPEN",
+    "closed_at": null,
+    "close_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "SELL",
+      "global_confidence": 0.982063,
+      "decision_timestamp": "2026-04-01T08:05:54.628884+00:00",
+      "fallback_used": false
+    }
+  },
+  {
+    "id": "8d11b6ef-13c8-48d4-ae4a-397469aae2a5",
+    "session_id": "sess_1774984364805_qsu4nk",
+    "symbol": "GBPUSD",
+    "side": "BUY",
+    "timeframe": "1H",
+    "size": 1.0,
+    "entry_price": 1.32934,
+    "opened_at": "2026-04-01T08:36:19.354491+00:00",
+    "status": "CLOSED",
+    "closed_at": "2026-04-01T08:36:53.262871+00:00",
+    "close_price": 1.32944,
+    "pnl": 0.0001,
+    "pnl_pct": 0.007523,
+    "note": "",
+    "agent_snapshot": {
+      "final_signal": "BUY",
+      "global_confidence": 0.758065,
+      "decision_timestamp": "2026-04-01T08:36:19.340629+00:00",
+      "fallback_used": false
+    }
   }
 ]

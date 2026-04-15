@@ -286,7 +286,7 @@ export default function AgentsPage() {
                                 >
                                     Open Market Comparison
                                 </a>
-                                <a className={styles.agentBtn} href="/trader_guide.html" aria-label="Open Trader Guide page">
+                                <a className={styles.agentBtn} href="/trader-guide" aria-label="Open Trader Guide page">
                                     Open Trader Guide
                                 </a>
                                 <a className={styles.agentBtn} href="/copilot.html" aria-label="Open AI Copilot page">

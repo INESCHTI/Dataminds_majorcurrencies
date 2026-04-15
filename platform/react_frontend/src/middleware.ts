@@ -11,6 +11,7 @@ export const config = {
         "/analytics/:path*",
         "/reports/:path*",
         "/trading/:path*",
+        "/trader-guide/:path*",
         "/monitoring/:path*",
         "/settings/:path*",
     ],
