@@ -15,4 +15,6 @@ urlpatterns = [
     path("api/face-auth/", include("face_auth.urls")), # Face recognition 2FA
     path("api/tutor/",     include("rag_tutor.urls")),  # RAG Strategy Tutor
     path("api/v2/paper-trading/", include("paper_trading.urls")),  # Paper Trading
+    path("api/testing/", include("test_mode.urls")),  # Testing simulation
+    path("api/", include("test_mode.ticks_urls")),    # /api/ticks
 ]

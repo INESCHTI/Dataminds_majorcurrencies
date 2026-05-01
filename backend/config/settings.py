@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "rag_tutor",
     "trading_ws",
     "paper_trading",
+    "test_mode",
 ]
 
 MIDDLEWARE = [

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -24,24 +24,22 @@ model User {
 }
 
 // ── KYC Verification ─────────────────────────────────────────────────────────
-// Individual columns instead of the opaque extractedFields Json blob.
 model KycVerification {
   id              Int       @id @default(autoincrement())
   userId          String
   user            User      @relation(fields: [userId], references: [id])
 
-  status          String    @default("pending") @db.VarChar(20)
+  status          String    @default("pending")
 
-  // Top-level OCR-extracted fields (flattened from the old Json blob)
-  fullName        String?   @db.VarChar(120)
-  cinNumber       String?   @db.VarChar(40)
-  nationality     String?   @db.VarChar(60)
-  documentCountry String?   @db.VarChar(60)
-  documentType    String?   @db.VarChar(40)
-  dateOfBirth     String?   @db.VarChar(20)
-  expirationDate  String?   @db.VarChar(20)
+  fullName        String?
+  cinNumber       String?
+  nationality     String?
+  documentCountry String?
+  documentType    String?
+  dateOfBirth     String?
+  expirationDate  String?
 
-  ocrText         String?   @db.Text
+  ocrText         String?
   confidenceBasic Float?
 
   uploadedAt      DateTime  @default(now())
@@ -58,8 +56,8 @@ model Position {
   userId       String
   user         User      @relation(fields: [userId], references: [id])
 
-  pair         String    @db.VarChar(10)
-  side         String    @db.VarChar(4)   // "BUY" | "SELL"
+  pair         String
+  side         String
   size         Float
   entryPrice   Float
   currentPrice Float
@@ -67,12 +65,12 @@ model Position {
   takeProfit   Float?
   pnl          Float     @default(0)
   pnlPct       Float     @default(0)
-  status       String    @default("OPEN") @db.VarChar(10)
+  status       String    @default("OPEN")
   openedAt     DateTime  @default(now())
   closedAt     DateTime?
 
   @@index([userId])
-  @@index([userId, status])   // compound – used by GET /api/positions
+  @@index([userId, status])
   @@index([pair])
   @@map("position")
 }
@@ -83,18 +81,16 @@ model UserSettings {
   userId               String  @unique
   user                 User    @relation(fields: [userId], references: [id])
 
-  // Risk management
   maxPositionSize      Float   @default(0.5)
   maxDailyLoss         Float   @default(500)
   maxDrawdown          Float   @default(15)
   maxOpenPositions     Int     @default(4)
   minConsensus         Int     @default(2)
   minConfidence        Float   @default(60)
-  defaultStopLoss      Float   @default(40)   // was Int – matched as Float in Position
-  defaultTakeProfit    Float   @default(80)   // was Int – matched as Float in Position
+  defaultStopLoss      Float   @default(40)
+  defaultTakeProfit    Float   @default(80)
   trailingStop         Boolean @default(false)
 
-  // Notification preferences
   notifySignals        Boolean @default(true)
   notifyHighConfidence Boolean @default(true)
   notifyAgentOffline   Boolean @default(true)
@@ -106,20 +102,16 @@ model UserSettings {
 }
 
 // ── Archived / Unused models ─────────────────────────────────────────────────
-// Signal and Order are managed entirely by the Django backend (SQLite).
-// They exist in MySQL but are NOT accessed via Prisma/Next.js.
-// Use @@ignore to keep the tables intact without generating Prisma client code.
-
 model Signal {
   id             Int      @id @default(autoincrement())
-  pair           String   @db.VarChar(10)
-  direction      String   @db.VarChar(10)
+  pair           String
+  direction      String
   confidence     Float
   macroScore     Float?
   technicalScore Float?
   sentimentScore Float?
   consensusCount Int      @default(0)
-  rationale      String?  @db.Text
+  rationale      String?
   entryPrice     Float?
   stopLoss       Float?
   takeProfit     Float?
@@ -133,14 +125,14 @@ model Signal {
 model Order {
   id         Int      @id @default(autoincrement())
   userId     String
-  pair       String   @db.VarChar(10)
-  side       String   @db.VarChar(4)
-  type       String   @db.VarChar(10)
+  pair       String
+  side       String
+  type       String
   size       Float
   price      Float?
   stopLoss   Float?
   takeProfit Float?
-  status     String   @default("PENDING") @db.VarChar(10)
+  status     String   @default("PENDING")
   createdAt  DateTime @default(now())
 
   @@ignore

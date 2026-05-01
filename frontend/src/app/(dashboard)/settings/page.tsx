@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
+import { useAccessibility, type FontScale, type ContrastMode } from "@/components/accessibility-provider";
+
 const apiKeys = [
     { name: "FRED API Key", key: "FRED_API_KEY", status: "configured", masked: "********3f2a" },
     { name: "MetaTrader 5", key: "MT5_LOGIN", status: "configured", masked: "******5421" },
@@ -58,6 +60,7 @@ export default function SettingsPage() {
     const [saving,          setSaving]          = useState(false);
     const [saved,           setSaved]           = useState(false);
     const [saveError,       setSaveError]       = useState("");
+    const { fontScale, contrast, reducedMotion, dyslexicFont, setFontScale, setContrast, setReducedMotion, setDyslexicFont, resetAccessibility } = useAccessibility();
 
     useEffect(() => {
         let active = true;
@@ -147,6 +150,7 @@ export default function SettingsPage() {
                         <TabsTrigger value="notifications" data-testid="settings-tab-notifications">Notifications</TabsTrigger>
                         <TabsTrigger value="risk" data-testid="settings-tab-risk">Risk Management</TabsTrigger>
                         <TabsTrigger value="security" data-testid="settings-tab-security">Security</TabsTrigger>
+                        <TabsTrigger value="accessibility" data-testid="settings-tab-accessibility">Accessibility</TabsTrigger>
                     </TabsList>
 
                     {/* API Keys Tab */}
@@ -378,6 +382,92 @@ export default function SettingsPage() {
                                 <RBButton variant="secondary" size="sm" onClick={() => setShowEnrollModal(true)} className="gap-2" data-testid="settings-enroll-face-btn">
                                     <Camera className="size-3.5" /> Enroll Face
                                 </RBButton>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Accessibility Tab */}
+                    <TabsContent value="accessibility" className="space-y-4">
+                        <Card className="border-border/50 bg-card/80 backdrop-blur">
+                            <CardHeader>
+                                <CardTitle className="text-sm flex items-center gap-2">
+                                    <Shield className="size-4" /> Accessibility
+                                </CardTitle>
+                                <CardDescription>Adjust readability and motion preferences (stored locally in this browser)</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <RBLabel className="text-xs text-muted-foreground">Font size</RBLabel>
+                                        <select
+                                            className="w-full rounded-md border border-border/40 bg-muted/20 px-3 py-2 text-sm"
+                                            value={String(fontScale)}
+                                            onChange={(e) => setFontScale(Number(e.target.value) as FontScale)}
+                                        >
+                                            <option value="1">Default</option>
+                                            <option value="1.1">Large</option>
+                                            <option value="1.2">Extra large</option>
+                                            <option value="1.3">Huge</option>
+                                        </select>
+                                        <div className="text-xs text-muted-foreground">
+                                            Scales the base UI text size across the app.
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <RBLabel className="text-xs text-muted-foreground">Contrast</RBLabel>
+                                        <select
+                                            className="w-full rounded-md border border-border/40 bg-muted/20 px-3 py-2 text-sm"
+                                            value={contrast}
+                                            onChange={(e) => setContrast(e.target.value as ContrastMode)}
+                                        >
+                                            <option value="default">Default</option>
+                                            <option value="high">High contrast</option>
+                                        </select>
+                                        <div className="text-xs text-muted-foreground">
+                                            Boosts legibility by strengthening borders and muted text.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
+                                    <div>
+                                        <div className="text-sm font-medium">Reduced motion</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            Disables UI animations and transitions (useful for motion sensitivity).
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setReducedMotion(!reducedMotion)}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-500/40 ${reducedMotion ? "bg-brand-blue-600" : "bg-slate-700"}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${reducedMotion ? "translate-x-6" : "translate-x-1"}`} />
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/30">
+                                    <div>
+                                        <div className="text-sm font-medium">Dyslexia-friendly font</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            Switches to a more readable font with wider spacing (helps with dyslexia).
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setDyslexicFont(!dyslexicFont)}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-500/40 ${dyslexicFont ? "bg-brand-blue-600" : "bg-slate-700"}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${dyslexicFont ? "translate-x-6" : "translate-x-1"}`} />
+                                    </button>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <RBButton variant="secondary" size="sm" onClick={resetAccessibility}>
+                                        Reset accessibility
+                                    </RBButton>
+                                    <div className="text-xs text-muted-foreground">
+                                        Tip: press <span className="font-mono">Ctrl/⌘ + Shift + M</span> on Testing to toggle coach mode.
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

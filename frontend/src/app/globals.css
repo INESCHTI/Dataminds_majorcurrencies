@@ -146,6 +146,45 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* ── Accessibility overrides ─────────────────────────────────────────────── */
+html[data-contrast="high"] {
+  --border: oklch(1 0 0 / 40%);
+  --input: oklch(1 0 0 / 45%);
+  --ring: oklch(0.92 0.08 258);
+  --muted-foreground: oklch(0.92 0.02 255);
+  --foreground: oklch(0.98 0 0);
+  --card-foreground: oklch(0.98 0 0);
+}
+
+html[data-contrast="high"] button,
+html[data-contrast="high"] [role="button"],
+html[data-contrast="high"] select,
+html[data-contrast="high"] input {
+  outline: 1px solid oklch(1 0 0 / 30%);
+}
+
+html[data-contrast="high"] a {
+  text-decoration: underline;
+}
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Dyslexia-friendly font ──────────────────────────────────────────────── */
+html.dyslexic-font,
+html.dyslexic-font body,
+html.dyslexic-font * {
+  font-family: "Comic Sans MS", "Comic Sans", "OpenDyslexic", "Trebuchet MS", Arial, sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+  line-height: 1.7;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

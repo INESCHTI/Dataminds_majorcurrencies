@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
 import {
     Sidebar,
     SidebarContent,
@@ -29,9 +30,11 @@ import {
     LogOut,
     GraduationCap,
     Wifi,
+    Accessibility,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAccessibility, type FontScale, type ContrastMode } from "@/components/accessibility-provider";
 
 /* ── Grouped navigation ──────────────────────────────────────────────────── */
 const navGroups = [
@@ -46,6 +49,7 @@ const navGroups = [
         items: [
             { title: "Trading",        href: "/trading",   icon: CandlestickChart },
             { title: "Agent Monitor",  href: "/agents",    icon: Bot },
+            { title: "Testing",        href: "/testing",   icon: Activity },
         ],
     },
     {
@@ -66,9 +70,92 @@ const navGroups = [
     },
 ];
 
+/* ── Accessibility quick panel ───────────────────────────────────────────── */
+function AccessibilityPanel({ onClose }: { onClose: () => void }) {
+    const { fontScale, contrast, reducedMotion, dyslexicFont, setFontScale, setContrast, setReducedMotion, setDyslexicFont } = useAccessibility();
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClick(e: MouseEvent) {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                onClose();
+            }
+        }
+        document.addEventListener("mousedown", handleClick);
+        return () => document.removeEventListener("mousedown", handleClick);
+    }, [onClose]);
+
+    const Toggle = ({ on, onClick }: { on: boolean; onClick: () => void }) => (
+        <button
+            onClick={onClick}
+            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue-500/40 ${on ? "bg-brand-blue-600" : "bg-slate-700"}`}
+        >
+            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${on ? "translate-x-4" : "translate-x-0.5"}`} />
+        </button>
+    );
+
+    return (
+        <div
+            ref={ref}
+            className="absolute bottom-full left-2 right-2 mb-2 z-50 rounded-xl border border-white/10 bg-[#0f1825]/95 backdrop-blur-xl shadow-2xl p-4 space-y-4"
+        >
+            <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white tracking-wide">Accessibility</span>
+                <button onClick={onClose} className="text-slate-500 hover:text-white text-xs leading-none">✕</button>
+            </div>
+
+            {/* Font size */}
+            <div className="space-y-1.5">
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest">Font size</span>
+                <div className="grid grid-cols-4 gap-1">
+                    {([1, 1.1, 1.2, 1.3] as FontScale[]).map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => setFontScale(s)}
+                            className={`rounded-md py-1.5 text-[11px] font-medium transition-colors ${fontScale === s ? "bg-brand-blue-600 text-white" : "bg-white/[0.05] text-slate-400 hover:bg-white/10"}`}
+                        >
+                            {s === 1 ? "A" : s === 1.1 ? "A+" : s === 1.2 ? "A++" : "A+++"}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Contrast */}
+            <div className="space-y-1.5">
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest">Contrast</span>
+                <div className="grid grid-cols-2 gap-1">
+                    {(["default", "high"] as ContrastMode[]).map((m) => (
+                        <button
+                            key={m}
+                            onClick={() => setContrast(m)}
+                            className={`rounded-md py-1.5 text-[11px] font-medium capitalize transition-colors ${contrast === m ? "bg-brand-blue-600 text-white" : "bg-white/[0.05] text-slate-400 hover:bg-white/10"}`}
+                        >
+                            {m === "default" ? "Default" : "High"}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Toggles */}
+            <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-slate-300">Reduced motion</span>
+                    <Toggle on={reducedMotion} onClick={() => setReducedMotion(!reducedMotion)} />
+                </div>
+                <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-slate-300">Dyslexia font</span>
+                    <Toggle on={dyslexicFont} onClick={() => setDyslexicFont(!dyslexicFont)} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
 export function AppSidebar() {
     const pathname = usePathname();
     const { data: session } = useSession();
+    const [a11yOpen, setA11yOpen] = useState(false);
 
     const initials = session?.user?.name
         ? session.user.name
@@ -162,6 +249,26 @@ export function AppSidebar() {
                         </Tooltip>
                     </SidebarMenuItem>
 
+                    {/* Accessibility quick-access */}
+                    <SidebarMenuItem className="relative">
+                        {a11yOpen && <AccessibilityPanel onClose={() => setA11yOpen(false)} />}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <SidebarMenuButton
+                                    size="sm"
+                                    onClick={() => setA11yOpen((o) => !o)}
+                                    className={`transition-colors ${a11yOpen ? "bg-brand-blue-600/20 text-brand-blue-300" : "text-slate-400 hover:text-white hover:bg-white/[0.05]"}`}
+                                >
+                                    <Accessibility className="size-4" />
+                                    <span className="text-xs">Accessibility</span>
+                                </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                                Accessibility settings
+                            </TooltipContent>
+                        </Tooltip>
+                    </SidebarMenuItem>
+
                     {/* User info */}
                     <SidebarMenuItem>
                         <div className="flex items-center gap-3 px-3 py-2 border-t border-white/[0.07]">
@@ -197,5 +304,3 @@ export function AppSidebar() {
         </Sidebar>
     );
 }
-
-

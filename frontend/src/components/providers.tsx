@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { SessionProvider } from "next-auth/react";
-import { createContext, useMemo } from "react";
 import { usePageAgentCore, PageAgentContext } from "@/hooks/use-page-agent";
+import { AccessibilityProvider } from "@/components/accessibility-provider";
 
 /**
  * PageAgentProvider — initialises the PageAgent hook and exposes its state
@@ -20,9 +20,11 @@ function PageAgentProvider({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <SessionProvider>
-            <PageAgentProvider>
-                {children}
-            </PageAgentProvider>
+            <AccessibilityProvider>
+                <PageAgentProvider>
+                    {children}
+                </PageAgentProvider>
+            </AccessibilityProvider>
         </SessionProvider>
     );
 }

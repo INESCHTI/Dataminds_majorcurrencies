@@ -10,7 +10,7 @@ import type { XaiAgentBreakdown } from "@/types";
 
 interface Props {
     agentBreakdown: XaiAgentBreakdown;
-    explanation?: Record<string, unknown>;
+    explanation?: string;
     pair?: string;
 }
 
@@ -27,7 +27,7 @@ const SIGNAL_STYLE: Record<string, string> = {
     NEUTRAL: "bg-slate-500/15 text-slate-400 border-slate-500/30",
 };
 
-export function XaiBreakdown({ agentBreakdown, pair }: Props) {
+export function XaiBreakdown({ agentBreakdown, explanation, pair }: Props) {
     const agents = Object.entries(agentBreakdown).filter(([, v]) => v !== undefined);
 
     // Radar data: contribution strength per agent
@@ -65,6 +65,13 @@ export function XaiBreakdown({ agentBreakdown, pair }: Props) {
                 )}
             </div>
 
+            {explanation && (
+                <div className="p-3 rounded-xl border border-white/5 bg-white/[0.03]">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Human Explanation</p>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">{explanation}</p>
+                </div>
+            )}
+
             {/* Radar + Bar side-by-side */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Radar — agent influence */}
@@ -89,7 +96,7 @@ export function XaiBreakdown({ agentBreakdown, pair }: Props) {
                             <YAxis type="category" dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} width={80} />
                             <RechartsTooltip
                                 contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, fontSize: 12 }}
-                                formatter={(v: number) => [`${v > 0 ? "+" : ""}${v}%`, "Contribution"]}
+                                formatter={(v?: number) => [`${Number(v) > 0 ? "+" : ""}${Number(v ?? 0)}%`, "Contribution"]}
                             />
                             <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                                 {barData.map((entry, i) => (

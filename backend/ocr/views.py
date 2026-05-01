@@ -12,8 +12,6 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .pipeline import run_pipeline
-
 logger = logging.getLogger(__name__)
 
 ALLOWED_CONTENT_TYPES = {
@@ -61,6 +59,10 @@ def extract(request):
 
     try:
         image_bytes = uploaded.read()
+        # Lazy import to keep server boot resilient when optional OCR deps
+        # (opencv/easyocr, etc.) aren't installed on this machine.
+        from .pipeline import run_pipeline
+
         result = run_pipeline(image_bytes)
         return JsonResponse(result)
     except Exception:
