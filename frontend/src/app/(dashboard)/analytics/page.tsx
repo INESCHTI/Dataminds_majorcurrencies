@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { RBContent, RBHeader } from "@/components/reactbits";
 import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, LineChart, Line, Legend,
 } from "recharts";
-import { TrendingUp, Brain, Newspaper, BarChart3 } from "lucide-react";
-import { AuroraBackground, FadeInUp, StaggerContainer, StaggerItem, AnimatedCounter } from "@/components/animations";
+import { TrendingUp, Brain, Newspaper } from "lucide-react";
+import { FadeInUp, StaggerContainer, StaggerItem, AnimatedCounter } from "@/components/animations";
 
 const perf90 = Array.from({ length: 90 }, (_, i) => {
     const date = new Date(); date.setDate(date.getDate() - (90 - i));
@@ -55,17 +54,10 @@ export default function AnalyticsPage() {
     const maxDD = -18.4; const sharpe = 1.73; const win = 58.2;
 
     return (
-        <div className="flex flex-col h-full bg-[#080d18] text-slate-100 relative overflow-hidden">
-            <AuroraBackground />
-            <header className="relative z-10 flex h-14 shrink-0 items-center gap-3 border-b border-white/5 bg-black/30 backdrop-blur-xl px-6">
-                <SidebarTrigger className="-ml-1 text-slate-400" />
-                <Separator orientation="vertical" className="h-5 bg-white/10" />
-                <BarChart3 className="size-4 text-blue-400" />
-                <h1 className="text-sm font-bold text-white">Analytics</h1>
-                <span className="text-[10px] font-mono text-slate-500 border border-slate-700 rounded px-1.5 py-0.5">DSO1.1 - DSO1.3 - DSO2.2</span>
-            </header>
+        <div className="flex flex-col h-full bg-slate-950 text-slate-100">
+            <RBHeader title="Analytics" subtitle="DSO1.1 - DSO1.3 - DSO2.2" />
 
-            <div className="relative z-10 flex-1 overflow-auto p-6 space-y-6">
+            <RBContent className="space-y-6">
                 {/* KPI Row */}
                 <FadeInUp>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -91,7 +83,8 @@ export default function AnalyticsPage() {
                     <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/5 w-fit">
                         {TABS.map(t => (
                             <button key={t.id} onClick={() => setTab(t.id)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${tab === t.id ? "bg-violet-600 text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5"}`}>
+                                data-testid={`analytics-tab-${t.id}`}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${tab === t.id ? "bg-brand-blue-600 text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5"}`}>
                                 <t.icon className="size-3.5" /> {t.label}
                             </button>
                         ))}
@@ -111,15 +104,15 @@ export default function AnalyticsPage() {
                                     <AreaChart data={perf90}>
                                         <defs>
                                             <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                                <stop offset="5%" stopColor="#4D8048" stopOpacity={0.3}/>
+                                                <stop offset="95%" stopColor="#4D8048" stopOpacity={0}/>
                                             </linearGradient>
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)"/>
                                         <XAxis dataKey="date" tick={{fontSize:9,fill:"#475569"}} axisLine={false} tickLine={false} interval={14}/>
                                         <YAxis tick={{fontSize:10,fill:"#475569"}} axisLine={false} tickLine={false} tickFormatter={v=>`$${v}`}/>
                                         <Tooltip contentStyle={{background:"#0f172a",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"8px",fontSize:11}}/>
-                                        <Area type="monotone" dataKey="pnl" stroke="#10b981" strokeWidth={2} fill="url(#g1)"/>
+                                        <Area type="monotone" dataKey="pnl" stroke="#4D8048" strokeWidth={2} fill="url(#g1)"/>
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
@@ -211,7 +204,7 @@ export default function AnalyticsPage() {
                         </StaggerItem>
                     </StaggerContainer>
                 )}
-            </div>
+            </RBContent>
         </div>
     );
 }

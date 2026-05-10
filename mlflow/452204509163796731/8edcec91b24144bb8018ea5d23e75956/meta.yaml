@@ -1,0 +1,15 @@
+artifact_uri: file://D:\Téléchargements\trady\mlflow/452204509163796731/8edcec91b24144bb8018ea5d23e75956/artifacts
+end_time: 1776511005153
+entry_point_name: ''
+experiment_id: '452204509163796731'
+lifecycle_stage: active
+run_id: 8edcec91b24144bb8018ea5d23e75956
+run_name: baselines_EURUSD_20260418_121644
+run_uuid: 8edcec91b24144bb8018ea5d23e75956
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776511005111
+status: 4
+tags: []
+user_id: marie

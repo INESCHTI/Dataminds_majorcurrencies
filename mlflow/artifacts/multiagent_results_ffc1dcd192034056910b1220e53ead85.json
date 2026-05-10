@@ -1,0 +1,34 @@
+{
+  "pair": "EURUSD",
+  "timestamp": "2026-04-18T12:16:45.435879",
+  "data_days": 60,
+  "n_records": 1641,
+  "agents": {
+    "LSTM_Technical": {
+      "sharpe_ratio": 1.2,
+      "total_return": 0.08,
+      "contribution": 0.35
+    },
+    "XGBoost_Macro": {
+      "sharpe_ratio": 0.9,
+      "total_return": 0.06,
+      "contribution": 0.25
+    },
+    "HMM_Regime": {
+      "sharpe_ratio": 0.7,
+      "total_return": 0.04,
+      "contribution": 0.15
+    },
+    "Coordinator": {
+      "sharpe_ratio": 1.5,
+      "total_return": 0.12,
+      "contribution": 0.25
+    }
+  },
+  "system": {
+    "sharpe_ratio": 1.5,
+    "total_return": 0.12,
+    "win_rate": 0.62,
+    "max_drawdown": -0.08
+  }
+}

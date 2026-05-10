@@ -24,15 +24,6 @@ class MacroAgentV2:
         self.data_loader = MacroDataLoader()
         self.feature_engine = MacroFeatureEngine()
     
-    def _signal_to_direction(self, signal: int) -> str:
-        """Convert numeric signal to direction string"""
-        if signal == 1:
-            return "BUY"
-        elif signal == -1:
-            return "SELL"
-        else:
-            return "NEUTRAL"
-    
     def generate_signal(
         self,
         base_currency: str,
@@ -80,23 +71,17 @@ class MacroAgentV2:
             )
         
         # DETERMINISTIC signal generation
-        macro_signal = self.feature_engine.get_macro_signal(
+        return self.feature_engine.get_macro_signal(
             rate_diff,
             inflation_diff,
             base_momentum['rate_momentum'],
             carry_score
         )
-        
-        # Add direction to the signal
-        macro_signal['direction'] = self._signal_to_direction(macro_signal['signal'])
-        
-        return macro_signal
     
     def _neutral_signal(self, reason: str) -> Dict:
         """Return neutral signal"""
         return {
             'signal': 0,
-            'direction': self._signal_to_direction(0),
             'confidence': 0.0,
             'features_used': {},
             'deterministic_reason': reason,

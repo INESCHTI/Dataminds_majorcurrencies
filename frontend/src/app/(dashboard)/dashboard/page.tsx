@@ -1,12 +1,11 @@
-﻿'use client';
+﻿"use client";
 
-import DashboardNavigation from '@/components/DashboardNavigation';
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton, SkeletonCard } from "@/components/ui/skeleton";
+import { RBContent, RBHeader } from "@/components/reactbits";
 import {
     TrendingUp,
     Activity,
@@ -16,43 +15,22 @@ import {
     ArrowRight,
     Shield,
     Target,
-    Globe,
-    Brain,
-    Database,
-    Clock,
-    CheckCircle,
-    AlertCircle,
-    BarChart3,
-    PieChart,
-    Sparkles,
-    Rocket,
-    TrendingDown,
-    Minus,
-    MapPin,
-    Newspaper,
-    Globe2,
-    Users,
-    Cpu,
-    Signal,
-    Timer,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import type { HealthCheckV2 } from "@/types";
 
 const pairs = [
-    { symbol: "EURUSD", name: "EUR/USD", description: "Euro vs US Dollar", trend: "up", session: "London/New York" },
-    { symbol: "USDJPY", name: "USD/JPY", description: "US Dollar vs Japanese Yen", trend: "neutral", session: "Tokyo/London" },
-    { symbol: "GBPUSD", name: "GBP/USD", description: "British Pound vs US Dollar", trend: "down", session: "London/New York" },
-    { symbol: "USDCHF", name: "USD/CHF", description: "US Dollar vs Swiss Franc", trend: "up", session: "Zurich/London" },
+    { symbol: "EURUSD", name: "EUR/USD", description: "Euro vs US Dollar" },
+    { symbol: "USDJPY", name: "USD/JPY", description: "US Dollar vs Japanese Yen" },
+    { symbol: "GBPUSD", name: "GBP/USD", description: "British Pound vs US Dollar" },
+    { symbol: "USDCHF", name: "USD/CHF", description: "US Dollar vs Swiss Franc" },
 ];
 
 export default function DashboardPage() {
     const router = useRouter();
     const [health, setHealth] = useState<HealthCheckV2 | null>(null);
     const [loading, setLoading] = useState(true);
-    const [latestSignal, setLatestSignal] = useState<any>(null);
-    const [signalLoading, setSignalLoading] = useState(false);
 
     useEffect(() => {
         const loadHealth = async () => {
@@ -81,544 +59,320 @@ export default function DashboardPage() {
         ? Object.values(health.agent_performances).reduce((sum, p) => sum + p.total_signals, 0)
         : 0;
 
-    const generateQuickSignal = async (pair: string) => {
-        setSignalLoading(true);
-        try {
-            const signal = await api.v2.generateSignal(pair);
-            setLatestSignal(signal);
-        } catch (error) {
-            console.error("Failed to generate signal:", error);
-        }
-        setSignalLoading(false);
-    };
-
-    const getTrendIcon = (trend: string) => {
-        switch (trend) {
-            case "up": return <TrendingUp className="size-4 text-green-500" />;
-            case "down": return <TrendingDown className="size-4 text-red-500" />;
-            default: return <Minus className="size-4 text-yellow-500" />;
-        }
-    };
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
-            <SidebarTrigger />
-            <div className="container mx-auto p-6 space-y-8">
-                <DashboardNavigation />
+        <div className="flex flex-col h-full bg-slate-950 text-slate-100">
+            <RBHeader
+                title="FX Alpha Platform"
+                subtitle="Institutional Multi-Agent Trading System"
+            />
 
-                <div className="flex-1 overflow-auto p-6 lg:p-8 space-y-8">
-                    {/* Hero Section - Enhanced Modern Dark Theme */}
-                    <Card className="border-0 bg-gradient-to-br from-purple-900/50 via-blue-900/50 to-slate-900/50 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-emerald-500/10 animate-pulse"></div>
-                        <CardContent className="p-8 lg:p-12 relative z-10">
-                            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-                                <div className="flex-1 space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 px-4 py-2 shadow-lg">
-                                            <Sparkles className="size-4 mr-2" />
-                                            AI-Powered Trading
-                                        </Badge>
-                                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 px-4 py-2">
-                                            <CheckCircle className="size-4 mr-2" />
-                                            Production Ready
-                                        </Badge>
-                                        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 px-4 py-2">
-                                            <Globe2 className="size-4 mr-2" />
-                                            Multi-Agent System
-                                        </Badge>
-                                    </div>
-                                    
-                                    <div className="space-y-4">
-                                        <h1 className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
-                                            FX Alpha Platform
-                                        </h1>
-                                        <p className="text-xl text-purple-100 leading-relaxed max-w-3xl">
-                                            Advanced multi-agent system combining real-time technical analysis, 
-                                            macroeconomic data, sentiment analysis, and geopolitical insights 
-                                            for institutional-grade FX trading signals with 4 specialized AI agents.
-                                        </p>
-                                    </div>
-                                    
-                                    <div className="flex flex-wrap gap-4">
-                                        <Button
-                                            onClick={() => router.push("/realtime-dashboard")}
-                                            size="lg"
-                                            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-lg transform hover:scale-105 transition-all"
-                                        >
-                                            <Zap className="size-5 mr-2" />
-                                            Live Trading Dashboard
-                                            <ArrowRight className="size-5 ml-2" />
-                                        </Button>
-                                        <Button
-                                            onClick={() => router.push("/agents")}
-                                            size="lg"
-                                            variant="outline"
-                                            className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 hover:border-purple-400 transform hover:scale-105 transition-all"
-                                        >
-                                            <Brain className="size-5 mr-2" />
-                                            View AI Agents
-                                        </Button>
-                                        <Button
-                                            onClick={() => router.push("/monitoring")}
-                                            size="lg"
-                                            variant="outline"
-                                            className="border-emerald-500/50 text-emerald-200 hover:bg-emerald-500/20 hover:border-emerald-400 transform hover:scale-105 transition-all"
-                                        >
-                                            <Activity className="size-5 mr-2" />
-                                            System Monitor
-                                        </Button>
-                                    </div>
+            <RBContent className="space-y-6 lg:p-8">
+                {/* Hero Section */}
+                <Card className="border-2 border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-transparent">
+                    <CardContent className="p-8 lg:p-10">
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                            <div className="flex-1">
+                                <Badge className="mb-3 bg-brand-blue-500/10 text-brand-blue-600 dark:text-brand-blue-400 border-brand-blue-500/20">
+                                    Production Ready
+                                </Badge>
+                                <h2 className="text-3xl lg:text-4xl font-bold mb-3">
+                                    Advanced Multi-Agent System
+                                </h2>
+                                <p className="text-muted-foreground text-lg mb-6 max-w-2xl">
+                                    Combine technical analysis, macroeconomic data, and sentiment analysis
+                                    with AI-powered agents for institutional-grade FX trading signals.
+                                </p>
+                                <div className="flex flex-wrap gap-3">
+                                    <Button
+                                        onClick={() => router.push("/agents")}
+                                        size="lg"
+                                        data-testid="dashboard-view-agents"
+                                        className="bg-brand-blue-600 hover:bg-brand-blue-700 text-white"
+                                    >
+                                        <Bot className="size-4 mr-2" />
+                                        View Agents
+                                        <ArrowRight className="size-4 ml-2" />
+                                    </Button>
+                                    <Button
+                                        onClick={() => router.push("/monitoring")}
+                                        size="lg"
+                                        variant="outline"
+                                        data-testid="dashboard-monitoring"
+                                    >
+                                        <Activity className="size-4 mr-2" />
+                                        Monitoring Dashboard
+                                    </Button>
                                 </div>
-                                
-                                <div className="hidden lg:flex items-center justify-center">
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 blur-3xl rounded-full opacity-50 animate-pulse"></div>
-                                        <div className="relative bg-gradient-to-br from-purple-600/20 to-blue-600/20 p-8 rounded-2xl border border-purple-500/30">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="p-3 rounded-lg bg-purple-500/20 border border-purple-500/30">
-                                                    <Bot className="size-8 text-purple-300" />
-                                                </div>
-                                                <div className="p-3 rounded-lg bg-blue-500/20 border border-blue-500/30">
-                                                    <Globe className="size-8 text-blue-300" />
-                                                </div>
-                                                <div className="p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/30">
-                                                    <Newspaper className="size-8 text-emerald-300" />
-                                                </div>
-                                                <div className="p-3 rounded-lg bg-amber-500/20 border border-amber-500/30">
-                                                    <Shield className="size-8 text-amber-300" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            </div>
+                            <div className="hidden lg:flex items-center justify-center p-8 rounded-2xl bg-gradient-to-br from-brand-blue-500/10 to-brand-blue-500/5 border border-brand-blue-500/20">
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-brand-blue-500/20 blur-3xl rounded-full"></div>
+                                    <Bot className="size-24 text-brand-blue-500 relative z-10" />
                                 </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* System Performance KPIs */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {loading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <SkeletonCard key={i} />
+                        ))
+                    ) : (
+                    <>
+                    <Card className="border-border/50 bg-card/80 backdrop-blur transition-all hover:border-brand-blue-500/20 hover:shadow-brand-blue-500/5 hover:shadow-md hover:-translate-y-0.5">
+                        <CardContent className="p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 rounded-lg bg-brand-green-500/10">
+                                    <Activity className="size-5 text-brand-green-600" />
+                                </div>
+                                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                    Status
+                                </div>
+                            </div>
+                            <div className="text-2xl font-bold">
+                                {health?.status === "operational" ? "OPERATIONAL" : "OFFLINE"}
+                            </div>
+                            <div className="mt-1 flex items-center gap-1">
+                                <div className="size-2 rounded-full bg-brand-green-600 animate-pulse"></div>
+                                <span className="text-xs text-brand-green-600">All Systems Online</span>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Live Signal Generator - Enhanced */}
-                    <Card className="border-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl shadow-xl">
-                        <CardHeader>
-                            <CardTitle className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
-                                        <Zap className="size-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold text-white">Live Signal Generator</h2>
-                                        <p className="text-purple-200">Generate real trading signals with 4 AI agents</p>
-                                    </div>
+                    <Card className="border-border/50 bg-card/80 backdrop-blur transition-all hover:border-brand-blue-500/20 hover:shadow-brand-blue-500/5 hover:shadow-md hover:-translate-y-0.5">
+                        <CardContent className="p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 rounded-lg bg-brand-blue-500/10">
+                                    <Bot className="size-5 text-brand-blue-600" />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                        <Activity className="size-3 mr-2" />
-                                        Real-Time
-                                    </Badge>
-                                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                                        <Timer className="size-3 mr-2" />
-                                        15s Generation
-                                    </Badge>
+                                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                    Active Agents
                                 </div>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {pairs.map((pair) => (
-                                    <div
-                                        key={pair.symbol}
-                                        className="p-6 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 to-blue-900/20 hover:from-purple-900/30 hover:to-blue-900/30 transition-all group"
-                                    >
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div>
-                                                    <div className="text-xl font-bold text-white">{pair.name}</div>
-                                                    <div className="text-sm text-purple-200">{pair.description}</div>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <MapPin className="size-3 text-purple-400" />
-                                                        <span className="text-xs text-purple-300">{pair.session}</span>
-                                                    </div>
-                                                </div>
-                                                {getTrendIcon(pair.trend)}
+                            </div>
+                            <div className="text-2xl font-bold">
+                                {health ? Object.keys(health.agent_performances).length : 0}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                                Technical - Macro - Sentiment
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/50 bg-card/80 backdrop-blur transition-all hover:border-brand-blue-500/20 hover:shadow-brand-blue-500/5 hover:shadow-md hover:-translate-y-0.5">
+                        <CardContent className="p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 rounded-lg bg-brand-blue-500/10">
+                                    <Zap className="size-5 text-brand-blue-600" />
+                                </div>
+                                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                    Signals Generated
+                                </div>
+                            </div>
+                            <div className="text-2xl font-bold">{totalSignals}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Last 30 days</div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/50 bg-card/80 backdrop-blur transition-all hover:border-amber-500/20 hover:shadow-amber-500/5 hover:shadow-md hover:-translate-y-0.5">
+                        <CardContent className="p-5">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-2.5 rounded-lg bg-amber-500/10">
+                                    <Target className="size-5 text-amber-500" />
+                                </div>
+                                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                    Avg Win Rate
+                                </div>
+                            </div>
+                            <div className="text-2xl font-bold">{avgWinRate}%</div>
+                            <div className="flex items-center gap-1 mt-1">
+                                <span className="text-xs text-muted-foreground">Target</span>
+                                <span className={`text-xs font-medium ${
+                                    Number(avgWinRate) >= 55 ? "text-brand-green-500" : "text-amber-500"
+                                }`}>&gt; 55%</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    </>
+                    )}
+                </div>
+
+                {/* Major Currency Pairs */}
+                <Card className="border-border/50 bg-card/80 backdrop-blur">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <LineChart className="size-5" />
+                            Major Currency Pairs
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {pairs.map((pair) => (
+                                <div
+                                    key={pair.symbol}
+                                    className="group p-5 rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 hover:border-brand-blue-500/30 transition-all cursor-pointer"
+                                    onClick={() => router.push(`/agents?pair=${pair.symbol}`)}
+                                >
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div>
+                                            <div className="text-lg font-bold">{pair.name}</div>
+                                            <div className="text-sm text-muted-foreground">
+                                                {pair.description}
                                             </div>
                                         </div>
-                                        <Button
-                                            onClick={() => generateQuickSignal(pair.symbol)}
-                                            disabled={signalLoading}
-                                            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-lg transform hover:scale-105 transition-all"
-                                        >
-                                            {signalLoading ? (
-                                                <>
-                                                    <Activity className="size-4 mr-2 animate-spin" />
-                                                    Generating...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Zap className="size-4 mr-2" />
-                                                    Generate Signal
-                                                </>
-                                            )}
-                                        </Button>
+                                        <ArrowRight className="size-5 text-muted-foreground group-hover:text-brand-blue-500 group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full group-hover:bg-brand-blue-600 group-hover:text-white group-hover:border-brand-blue-600 transition-all"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            router.push(`/agents?pair=${pair.symbol}`);
+                                        }}
+                                    >
+                                        <Zap className="size-3 mr-2" />
+                                        Generate Signal
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Agent Performance Overview */}
+                {health && (
+                    <Card className="border-border/50 bg-card/80 backdrop-blur">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2">
+                                    <Activity className="size-5" />
+                                    Agent Performance Overview
+                                </CardTitle>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => router.push("/agents")}
+                                >
+                                    View Details
+                                    <ArrowRight className="size-3 ml-2" />
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {Object.entries(health.agent_performances).map(([type, perf]) => (
+                                    <div
+                                        key={type}
+                                        className="p-4 rounded-lg border border-border/50 bg-muted/20"
+                                    >
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 rounded-lg bg-primary/10">
+                                                    <Bot className="size-4 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-semibold capitalize">
+                                                        {type} Agent
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {perf.total_signals} signals generated
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-4 gap-4 text-sm">
+                                            <div className="text-center p-3 rounded-lg bg-background/50">
+                                                <div className="text-muted-foreground text-xs mb-1">
+                                                    Win Rate
+                                                </div>
+                                                <div className="font-bold text-brand-green-600 dark:text-brand-green-400">
+                                                    {(perf.win_rate * 100).toFixed(1)}%
+                                                </div>
+                                            </div>
+                                            <div className="text-center p-3 rounded-lg bg-background/50">
+                                                <div className="text-muted-foreground text-xs mb-1">
+                                                    Sharpe Ratio
+                                                </div>
+                                                <div className="font-bold">
+                                                    {perf.sharpe_ratio.toFixed(2)}
+                                                </div>
+                                            </div>
+                                            <div className="text-center p-3 rounded-lg bg-background/50">
+                                                <div className="text-muted-foreground text-xs mb-1">
+                                                    Max Drawdown
+                                                </div>
+                                                <div className="font-bold text-destructive">
+                                                    {(perf.max_drawdown * 100).toFixed(1)}%
+                                                </div>
+                                            </div>
+                                            <div className="text-center p-3 rounded-lg bg-background/50">
+                                                <div className="text-muted-foreground text-xs mb-1">
+                                                    Total PnL
+                                                </div>
+                                                <div
+                                                    className={`font-bold ${
+                                                        perf.total_pnl >= 0
+                                                            ? "text-brand-green-600 dark:text-brand-green-400"
+                                                            : "text-destructive"
+                                                    }`}
+                                                >
+                                                    {perf.total_pnl >= 0 ? "+" : ""}
+                                                    {perf.total_pnl.toFixed(2)}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
-                            
-                            {latestSignal && (
-                                <Card className="border-green-500/30 bg-gradient-to-br from-green-900/20 to-emerald-900/20 animate-pulse">
-                                    <CardContent className="p-6">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <CheckCircle className="size-6 text-green-400" />
-                                            <h3 className="text-xl font-bold text-white">Latest Signal Generated</h3>
-                                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                                <Signal className="size-3 mr-2" />
-                                                {latestSignal.signal?.signal_id?.split('_')[0] || 'EURUSD'}
-                                            </Badge>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                            <div>
-                                                <div className="text-sm text-purple-200 mb-1">Signal Direction</div>
-                                                <div className="text-2xl font-bold text-white">
-                                                    {latestSignal.signal?.direction || 'NEUTRAL'}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className="text-sm text-purple-200 mb-1">Confidence</div>
-                                                <div className="text-2xl font-bold text-green-400">
-                                                    {((latestSignal.signal?.confidence || 0) * 100).toFixed(1)}%
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className="text-sm text-purple-200 mb-1">Market Regime</div>
-                                                <div className="text-lg font-bold text-blue-400 capitalize">
-                                                    {latestSignal.signal?.market_regime || 'normal'}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className="text-sm text-purple-200 mb-1">Execution Time</div>
-                                                <div className="text-lg font-bold text-amber-400">
-                                                    {latestSignal.metadata?.execution_time_ms || 0}ms
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="mt-4 p-3 rounded-lg bg-purple-900/20 border border-purple-500/30">
-                                            <div className="text-xs text-purple-300 mb-1">Signal ID</div>
-                                            <div className="text-sm font-mono text-purple-200">
-                                                {latestSignal.signal?.signal_id || 'N/A'}
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )}
                         </CardContent>
                     </Card>
+                )}
 
-                    {/* System Performance Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Card className="border-0 bg-gradient-to-br from-emerald-900/50 to-slate-900/50 backdrop-blur-xl">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="p-3 rounded-xl bg-emerald-500/20">
-                                        <Activity className="size-6 text-emerald-400" />
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-purple-200">System Status</div>
-                                        <div className="text-2xl font-bold text-white">
-                                            {health?.status === "operational" ? "ONLINE" : "OFFLINE"}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="size-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                                    <span className="text-xs text-emerald-400">All Systems Operational</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-0 bg-gradient-to-br from-blue-900/50 to-slate-900/50 backdrop-blur-xl">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="p-3 rounded-xl bg-blue-500/20">
-                                        <Bot className="size-6 text-blue-400" />
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-purple-200">AI Agents</div>
-                                        <div className="text-2xl font-bold text-white">
-                                            {health ? Object.keys(health.agent_performances).length : 4}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="text-xs text-blue-400">Technical • Macro • Sentiment • Geopolitical</div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-0 bg-gradient-to-br from-purple-900/50 to-slate-900/50 backdrop-blur-xl">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="p-3 rounded-xl bg-purple-500/20">
-                                        <Zap className="size-6 text-purple-400" />
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-purple-200">Signals</div>
-                                        <div className="text-2xl font-bold text-white">{totalSignals}</div>
-                                    </div>
-                                </div>
-                                <div className="text-xs text-purple-400">Generated this month</div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-0 bg-gradient-to-br from-amber-900/50 to-slate-900/50 backdrop-blur-xl">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-4 mb-4">
-                                    <div className="p-3 rounded-xl bg-amber-500/20">
-                                        <Target className="size-6 text-amber-400" />
-                                    </div>
-                                    <div>
-                                        <div className="text-sm text-purple-200">Win Rate</div>
-                                        <div className="text-2xl font-bold text-white">{avgWinRate}%</div>
-                                    </div>
-                                </div>
-                                <div className="text-xs text-amber-400">Across all agents</div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* AI Agent Capabilities - Enhanced with Geopolitical */}
-                    <Card className="border-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-2xl text-white">
-                                <Brain className="size-6 text-purple-400" />
-                                AI Agent Capabilities
-                                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                                    <Cpu className="size-3 mr-2" />
-                                    4 Agents
-                                </Badge>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div className="space-y-4">
-                                    <div className="p-4 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 to-slate-900/20 hover:border-purple-400/50 transition-all group">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="p-2 rounded-lg bg-purple-500/20 group-hover:bg-purple-500/30 transition-all">
-                                                <BarChart3 className="size-5 text-purple-400" />
-                                            </div>
-                                            <h3 className="font-bold text-white">Technical Analysis</h3>
-                                        </div>
-                                        <p className="text-sm text-purple-200 mb-3">
-                                            Real-time price action, indicators, and pattern recognition
-                                        </p>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-purple-400"></div>
-                                                <span className="text-xs text-purple-300">RSI, MACD, Bollinger Bands</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-purple-400"></div>
-                                                <span className="text-xs text-purple-300">ADX, Ichimoku, ATR</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-purple-400"></div>
-                                                <span className="text-xs text-purple-300">85+ Technical Indicators</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    <div className="p-4 rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-slate-900/20 hover:border-blue-400/50 transition-all group">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="p-2 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/30 transition-all">
-                                                <Globe className="size-5 text-blue-400" />
-                                            </div>
-                                            <h3 className="font-bold text-white">Macroeconomic</h3>
-                                        </div>
-                                        <p className="text-sm text-purple-200 mb-3">
-                                            Interest rates, GDP, inflation, and economic indicators
-                                        </p>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-blue-400"></div>
-                                                <span className="text-xs text-purple-300">Central Bank Policies</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-blue-400"></div>
-                                                <span className="text-xs text-purple-300">Rate Differentials</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-blue-400"></div>
-                                                <span className="text-xs text-purple-300">FRED Economic Data</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    <div className="p-4 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/20 to-slate-900/20 hover:border-emerald-400/50 transition-all group">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="p-2 rounded-lg bg-emerald-500/20 group-hover:bg-emerald-500/30 transition-all">
-                                                <Newspaper className="size-5 text-emerald-400" />
-                                            </div>
-                                            <h3 className="font-bold text-white">Sentiment Analysis</h3>
-                                        </div>
-                                        <p className="text-sm text-purple-200 mb-3">
-                                            News sentiment, social media, market psychology
-                                        </p>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-emerald-400"></div>
-                                                <span className="text-xs text-purple-300">NLP Classification</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-emerald-400"></div>
-                                                <span className="text-xs text-purple-300">Financial News Feed</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-emerald-400"></div>
-                                                <span className="text-xs text-purple-300">Market Psychology</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    <div className="p-4 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-900/20 to-slate-900/20 hover:border-amber-400/50 transition-all group">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="p-2 rounded-lg bg-amber-500/20 group-hover:bg-amber-500/30 transition-all">
-                                                <Shield className="size-5 text-amber-400" />
-                                            </div>
-                                            <h3 className="font-bold text-white">Geopolitical</h3>
-                                        </div>
-                                        <p className="text-sm text-purple-200 mb-3">
-                                            Political events, trade policies, regional risks
-                                        </p>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-amber-400"></div>
-                                                <span className="text-xs text-purple-300">Political Stability</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-amber-400"></div>
-                                                <span className="text-xs text-purple-300">Trade Agreements</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="size-2 rounded-full bg-amber-400"></div>
-                                                <span className="text-xs text-purple-300">Regional Risk Analysis</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Agent Coordination Section */}
-                            <div className="mt-8 p-6 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/10 to-blue-900/10">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Users className="size-6 text-purple-400" />
-                                    <h3 className="text-xl font-bold text-white">Multi-Agent Coordination</h3>
-                                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                                        <Brain className="size-3 mr-2" />
-                                        Smart Weighting
-                                    </Badge>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="p-4 rounded-lg bg-purple-900/20 border border-purple-500/30">
-                                        <div className="text-sm text-purple-200 mb-1">Dynamic Weighting</div>
-                                        <div className="text-lg font-bold text-purple-300">Performance-Based</div>
-                                        <div className="text-xs text-purple-400 mt-1">30-day rolling Sharpe ratio</div>
-                                    </div>
-                                    <div className="p-4 rounded-lg bg-blue-900/20 border border-blue-500/30">
-                                        <div className="text-sm text-purple-200 mb-1">Conflict Detection</div>
-                                        <div className="text-lg font-bold text-blue-300">Smart Resolution</div>
-                                        <div className="text-xs text-purple-400 mt-1">Identifies opposing signals</div>
-                                    </div>
-                                    <div className="p-4 rounded-lg bg-emerald-900/20 border border-emerald-500/30">
-                                        <div className="text-sm text-purple-200 mb-1">Market Regime</div>
-                                        <div className="text-lg font-bold text-emerald-300">Adaptive Analysis</div>
-                                        <div className="text-xs text-purple-400 mt-1">Trending, ranging, volatile</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Quick Actions - Enhanced */}
-                    <Card className="border-0 bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-xl text-white">
-                                <Zap className="size-5 text-purple-400" />
-                                Quick Actions
-                                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                                    <Rocket className="size-3 mr-2" />
-                                    Navigate
-                                </Badge>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <Button
-                                    onClick={() => router.push("/monitoring")}
-                                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white border-0 shadow-lg transform hover:scale-105 transition-all"
-                                >
-                                    <Activity className="size-4 mr-2" />
-                                    System Monitoring
-                                </Button>
-                                <Button
-                                    onClick={() => router.push("/agents")}
-                                    variant="outline"
-                                    className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 transform hover:scale-105 transition-all"
-                                >
-                                    <Bot className="size-4 mr-2" />
-                                    Agent Details
-                                </Button>
-                                <Button
-                                    onClick={() => router.push("/backtesting")}
-                                    variant="outline"
-                                    className="border-blue-500/50 text-blue-200 hover:bg-blue-500/20 transform hover:scale-105 transition-all"
-                                >
-                                    <BarChart3 className="size-4 mr-2" />
-                                    Backtesting
-                                </Button>
-                                <Button
-                                    onClick={() => router.push("/api-test-page")}
-                                    variant="outline"
-                                    className="border-emerald-500/50 text-emerald-200 hover:bg-emerald-500/20 transform hover:scale-105 transition-all"
-                                >
-                                    <Database className="size-4 mr-2" />
-                                    API Testing
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* System Status Banner */}
-                    <Card className="border-0 bg-gradient-to-r from-emerald-900/30 to-blue-900/30 backdrop-blur-xl">
+                {/* Feature Highlights */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <Card className="border-border/50 bg-card/80 backdrop-blur hover:border-brand-blue-500/25 hover:-translate-y-0.5 transition-all">
                         <CardContent className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-                                        <CheckCircle className="size-6 text-emerald-400" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-white">System Operational</h3>
-                                        <p className="text-sm text-purple-200">All 4 AI agents running with real data processing</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                                        <Signal className="size-3 mr-2" />
-                                        Live
-                                    </Badge>
-                                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                                        <Database className="size-3 mr-2" />
-                                        Real Data
-                                    </Badge>
-                                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                                        <Cpu className="size-3 mr-2" />
-                                        Multi-Agent
-                                    </Badge>
-                                </div>
+                            <div className="p-3 rounded-lg bg-brand-blue-500/10 w-fit mb-4">
+                                <Bot className="size-6 text-brand-blue-600" />
                             </div>
+                            <h3 className="font-bold text-lg mb-2">Multi-Agent System</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Three specialized agents (Technical, Macro, Sentiment) collaborate to
+                                generate high-confidence trading signals with coordinated decision-making.
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/50 bg-card/80 backdrop-blur hover:border-brand-blue-500/25 hover:-translate-y-0.5 transition-all">
+                        <CardContent className="p-6">
+                            <div className="p-3 rounded-lg bg-brand-blue-500/10 w-fit mb-4">
+                                <Shield className="size-6 text-brand-blue-600" />
+                            </div>
+                            <h3 className="font-bold text-lg mb-2">Production Architecture</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                100% deterministic trading logic with LLM used only for classification.
+                                Includes drift detection, safety monitors, and performance tracking.
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-border/50 bg-card/80 backdrop-blur hover:border-brand-green-500/25 hover:-translate-y-0.5 transition-all">
+                        <CardContent className="p-6">
+                            <div className="p-3 rounded-lg bg-brand-green-500/10 w-fit mb-4">
+                                <Activity className="size-6 text-brand-green-600" />
+                            </div>
+                            <h3 className="font-bold text-lg mb-2">Real-Time Monitoring</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Track agent performance, detect distribution drift, and enforce safety
+                                rules with comprehensive monitoring and alerting capabilities.
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
-            </div>
+            </RBContent>
         </div>
     );
 }

@@ -8,27 +8,25 @@ import type {
     EconomicEvent,
     DailyPerformance,
     FreshnessHealthV2,
+    ReportSummaryResponse,
+    MasterSignalResponse,
+    PaperPosition,
+    PortfolioStats,
 } from "@/types";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-async function fetchWithTimeout(input: string, init: RequestInit = {}, timeoutMs = 30000): Promise<Response> {
+async function fetchWithTimeout(input: string, init: RequestInit = {}, timeoutMs = 15000): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-        const response = await fetch(input, {
+        return await fetch(input, {
             ...init,
             signal: controller.signal,
         });
+    } finally {
         clearTimeout(timeoutId);
-        return response;
-    } catch (error) {
-        clearTimeout(timeoutId);
-        if (error instanceof Error && error.name === 'AbortError') {
-            throw new Error(`Request timeout after ${timeoutMs}ms`);
-        }
-        throw error;
     }
 }
 
@@ -42,60 +40,10 @@ export class ApiRequestError extends Error {
     }
 }
 
-async function fetcher<T>(url: string, options: RequestInit = {}): Promise<T> {
-    try {
-        const res = await fetchWithTimeout(`${API_BASE}${url}`, { 
-            cache: "no-store",
-            ...options 
-        }, 30000);
-        
-        if (!res.ok) {
-            throw new ApiRequestError(`API error: ${res.status}`, res.status);
-        }
-        
-        // Check if response has content
-        const contentType = res.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return await res.json();
-        } else {
-            throw new ApiRequestError(`Invalid content type: ${contentType}`);
-        }
-    } catch (error) {
-        if (error instanceof ApiRequestError) {
-            throw error;
-        }
-        throw new ApiRequestError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-}
-
-async function postFetcher<T>(url: string, data: any = {}): Promise<T> {
-    try {
-        const res = await fetchWithTimeout(`${API_BASE}${url}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-            cache: "no-store",
-        }, 30000);
-        
-        if (!res.ok) {
-            throw new ApiRequestError(`API error: ${res.status}`, res.status);
-        }
-        
-        // Check if response has content
-        const contentType = res.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return await res.json();
-        } else {
-            throw new ApiRequestError(`Invalid content type: ${contentType}`);
-        }
-    } catch (error) {
-        if (error instanceof ApiRequestError) {
-            throw error;
-        }
-        throw new ApiRequestError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+async function fetcher<T>(url: string): Promise<T> {
+    const res = await fetchWithTimeout(`${API_BASE}${url}`, { cache: "no-store" }, 15000);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
 }
 
 // â”€â”€â”€ API Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -115,6 +63,12 @@ export const api = {
     performance: () =>
         fetcher<DailyPerformance[]>("/analytics/performance/"),
 
+    reportsSummary: (pair = "all", days = 90) =>
+        fetcher<ReportSummaryResponse>(`/analytics/reports/summary/?pair=${encodeURIComponent(pair)}&days=${days}`),
+
+    reportsExportUrl: (pair = "all", days = 90) =>
+        `${API_BASE}/analytics/reports/export/?pair=${encodeURIComponent(pair)}&days=${days}`,
+
     technicals: (pair: string) =>
         fetcher<TechnicalAnalysis>(`/technicals/${pair}/`),
 
@@ -131,177 +85,175 @@ export const api = {
             body: JSON.stringify({ pair }),
         }).then((r) => r.json()),
 
-    // V2 Monitoring endpoints
+    // V2 Architecture Endpoints
     v2: {
-        healthCheck: () =>
-            fetcher('/monitoring/health_check/'),
-        
-        driftDetection: () =>
-            fetcher('/monitoring/drift_detection/'),
-        
-        agentPerformance: (days?: number) =>
-            fetcher(`/monitoring/agent_performance/${days ? `?days=${days}` : ''}`),
-        
-        freshnessHealth: (targetMinutes: number = 240) =>
-            fetcher(`/monitoring/freshness_health/?target_minutes=${targetMinutes}`),
-        
         generateSignal: async (pair: string) => {
-            const res = await fetchWithTimeout(`${API_BASE}/test/generate_signal`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pair }),
-                cache: "no-store"
-            }, 60000);  // 60 seconds for real signal generation
-            if (!res.ok) throw new Error(`API error: ${res.status}`);
-            return res.json();
+            try {
+                const response = await fetchWithTimeout(
+                    `${API_BASE}/v2/signals/generate_signal/`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        cache: "no-store",
+                        body: JSON.stringify({ pair }),
+                    },
+                    180000
+                );
+
+                if (!response.ok) {
+                    let backendMessage = "";
+                    try {
+                        const payload = await response.json();
+                        backendMessage = payload?.error || payload?.reason || "";
+                    } catch {
+                        // Ignore non-JSON error responses
+                    }
+
+                    const detail = backendMessage
+                        ? ` (${backendMessage})`
+                        : "";
+                    throw new ApiRequestError(
+                        `Signal generation failed (HTTP ${response.status})${detail}.`,
+                        response.status
+                    );
+                }
+
+                return response.json();
+            } catch (error) {
+                if (error instanceof ApiRequestError) {
+                    throw error;
+                }
+
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    throw new ApiRequestError(
+                        "Signal generation took too long (3-minute timeout). Please try again.",
+                    );
+                }
+
+                const details = error instanceof Error ? ` (${error.message})` : "";
+                throw new ApiRequestError(
+                    `Unable to connect to the backend. Make sure the Django API is running on port 8000 and CORS is configured.${details}`,
+                );
+            }
         },
+
+        agentPerformance: () =>
+            fetcher(`/v2/monitoring/agent_performance/`),
+
+        healthCheck: () =>
+            fetcher(`/v2/monitoring/health_check/`),
+
+        driftDetection: () =>
+            fetcher(`/v2/monitoring/drift_detection/`),
+
+        freshnessHealth: () =>
+            fetcher<FreshnessHealthV2>(`/v2/monitoring/freshness_health/`),  // targets set server-side (news 2880m, macro/ohlcv 10080m)
     },
 
-    // Tactical Analysis endpoints
-    tactical: {
-        multitimeframeSignal: (symbol: string) =>
-            postFetcher('/tactical/multitimeframe_signal/', { symbol }),
-        
-        generateTacticalReport: (includePositions: boolean = true) =>
-            postFetcher('/tactical/generate_tactical_report/', { include_positions: includePositions }),
-        
-        mt5Status: () =>
-            fetcher('/tactical/mt5_status/'),
-        
-        startMt5Service: () =>
-            postFetcher('/tactical/start_mt5_service/'),
-        
-        stopMt5Service: () =>
-            postFetcher('/tactical/stop_mt5_service/'),
+    // ─── Master Unified Pipeline ─────────────────────────────────────────────
+    generateMaster: async (
+        pair: string,
+        options: { capital?: number; currentEquity?: number; currentPositions?: number } = {}
+    ): Promise<MasterSignalResponse> => {
+        const { capital = 10_000, currentEquity, currentPositions = 0 } = options;
+        try {
+            const response = await fetchWithTimeout(
+                `${API_BASE}/v2/master/generate/`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    cache: "no-store",
+                    body: JSON.stringify({
+                        pair,
+                        capital,
+                        current_equity: currentEquity ?? capital,
+                        current_positions: currentPositions,
+                    }),
+                },
+                180_000 // 3-minute timeout
+            );
+
+            if (!response.ok) {
+                let msg = "";
+                try {
+                    const payload = await response.json();
+                    msg = payload?.error || payload?.reason || "";
+                } catch { /* ignore */ }
+                throw new ApiRequestError(
+                    `Master signal failed (HTTP ${response.status})${msg ? ` — ${msg}` : ""}.`,
+                    response.status
+                );
+            }
+            return response.json();
+        } catch (error) {
+            if (error instanceof ApiRequestError) throw error;
+            if (error instanceof DOMException && error.name === "AbortError") {
+                throw new ApiRequestError("Signal generation timed out (3 min). Please retry.");
+            }
+            const details = error instanceof Error ? ` (${error.message})` : "";
+            throw new ApiRequestError(
+                `Cannot reach backend. Ensure Django runs on port 8000 with CORS enabled.${details}`
+            );
+        }
     },
 
-    // MCP Agent System endpoints
-    mcp: {
-        // Test endpoint for debugging
-        testEndpoint: () =>
-            postFetcher('/mcp/test/'),
-        
-        // MCP Agent Collecteur (Data Collection)
-        startCollecteur: () =>
-            postFetcher('/mcp/collecteur/start/'),
-        
-        stopCollecteur: () =>
-            postFetcher('/mcp/collecteur/stop/'),
-        
-        getCollecteurStatus: () =>
-            fetcher('/mcp/collecteur/status/'),
-        
-        getCollecteurContext: () =>
-            fetcher('/mcp/collecteur/context/'),
-        
-        getCollecteurTools: () =>
-            fetcher('/mcp/collecteur/tools/'),
-        
-        // MCP Agent Feeder (Data Distribution)
-        startFeeder: () =>
-            postFetcher('/mcp/feeder/start/'),
-        
-        stopFeeder: () =>
-            postFetcher('/mcp/feeder/stop/'),
-        
-        getFeederStatus: () =>
-            fetcher('/mcp/feeder/status/'),
-        
-        getFeederFeeds: () =>
-            fetcher('/mcp/feeder/feeds/'),
-        
-        getFeederAgents: () =>
-            fetcher('/mcp/feeder/agents/'),
-        
-        // Real-time agent data
-        getAgentData: (agentName: string) =>
-            fetcher(`/mcp/agents/${agentName}/data/`),
-        
-        getAgentSignals: () =>
-            fetcher('/mcp/agents/signals/'),
-        
-        // System overview
-        getSystemOverview: () =>
-            fetcher('/mcp/system/overview/'),
-        
-        getRealTimeStats: () =>
-            fetcher('/mcp/system/realtime-stats/'),
+    // ─── Data Ingestion ───────────────────────────────────────────────────────
+    dataIngest: {
+        refreshNews: () =>
+            fetchWithTimeout(`${API_BASE}/v2/data/refresh_news/`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+            }, 10000).then((r) => r.json()),
+
+        refreshOhlcv: () =>
+            fetchWithTimeout(`${API_BASE}/v2/data/refresh_ohlcv/`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+            }, 10000).then((r) => r.json()),
+
+        refreshMacro: () =>
+            fetchWithTimeout(`${API_BASE}/v2/data/refresh_macro/`, {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+            }, 10000).then((r) => r.json()),
+
+        status: () =>
+            fetcher<{
+                sources: Record<string, { running: boolean; last_run: string | null; last_result: unknown }>;
+                db_last_success: Record<string, string | null>;
+            }>(`/v2/data/status/`),
     },
-    advanced: {
-        llm: {
-            getSampleStatements: () =>
-                fetcher('/llm/sample_statements/'),
-            
-            analyzeStatements: async (statements: any[]) => {
-                const res = await fetchWithTimeout(`${API_BASE}/llm/analyze_multiple_statements/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ statements }),
-                    cache: "no-store"
-                }, 15000);
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
-                return res.json();
-            },
-        },
-        
-        patterns: {
-            analyzeWithSampleData: async (symbol: string, timeframe: string) => {
-                const res = await fetchWithTimeout(`${API_BASE}/patterns/analyze_with_sample_data/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ symbol, timeframe }),
-                    cache: "no-store"
-                }, 15000);
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
-                return res.json();
-            },
-        },
-        
-        rl: {
-            getOptimizationStats: () =>
-                fetcher('/rl/get_optimization_stats/'),
-            
-            optimizeWeights: async (weights: any) => {
-                const res = await fetchWithTimeout(`${API_BASE}/rl/optimize_weights/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(weights),
-                    cache: "no-store"
-                }, 15000);
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
-                return res.json();
-            },
-        },
-        
-        timezone: {
-            getCurrentSession: () =>
-                fetcher('/timezone/get_current_session/'),
-            
-            getSessionRecommendations: async (currency: string) => {
-                const res = await fetchWithTimeout(`${API_BASE}/timezone/get_session_recommendations/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ currency_pair: currency }),
-                    cache: "no-store"
-                }, 15000);
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
-                return res.json();
-            },
-            
-            optimizeSessionWeights: async (data: any) => {
-                const res = await fetchWithTimeout(`${API_BASE}/timezone/optimize_session_weights/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                    cache: "no-store"
-                }, 15000);
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
-                return res.json();
-            },
-            
-            getSessionStatistics: () =>
-                fetcher('/timezone/get_session_statistics/'),
-        },
+
+    // ─── Paper Trading ────────────────────────────────────────────────────────
+    paperTrading: {
+        getPositions: () =>
+            fetcher<PaperPosition[]>("/v2/paper-trading/positions/"),
+
+        openPosition: (data: {
+            pair: string; side: "BUY" | "SELL"; size: number;
+            entry_price: number; stop_loss?: number; take_profit?: number;
+        }) =>
+            fetchWithTimeout(`${API_BASE}/v2/paper-trading/positions/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            }).then((r) => r.json()),
+
+        closePosition: (id: number, closePrice?: number) =>
+            fetchWithTimeout(`${API_BASE}/v2/paper-trading/positions/${id}/`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(closePrice != null ? { close_price: closePrice } : {}),
+            }).then((r) => r.json()),
+
+        getHistory: (limit = 100) =>
+            fetcher<PaperPosition[]>(`/v2/paper-trading/history/?limit=${limit}`),
+
+        getStats: () =>
+            fetcher<PortfolioStats>("/v2/paper-trading/stats/"),
     },
 };
 

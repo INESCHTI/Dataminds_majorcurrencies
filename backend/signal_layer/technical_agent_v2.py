@@ -25,18 +25,9 @@ class TechnicalAgentV2:
         self.data_loader = TimeSeriesLoader()
         self.feature_engine = TechnicalFeatureEngine()
     
-    def _signal_to_direction(self, signal: int) -> str:
-        """Convert numeric signal to direction string"""
-        if signal == 1:
-            return "BUY"
-        elif signal == -1:
-            return "SELL"
-        else:
-            return "NEUTRAL"
-    
     def generate_signal(self, symbol: str) -> Dict:
         """
-        Generate technical signal with real data and logic
+        Generate technical signal using PURE LOGIC
         
         Returns:
             {
@@ -46,23 +37,18 @@ class TechnicalAgentV2:
                 'deterministic_reason': str
             }
         """
-        try:
-            # Load real data with proper error handling
-            df = self.data_loader.load_ohlcv(symbol)
-            
-            if df.empty or len(df) < 200:
-                return self._neutral_signal("Insufficient data")
-            
-            # Calculate indicators with real data
-            df_with_features = self.feature_engine.calculate_all(df)
-            indicators = self.feature_engine.get_current_values(df_with_features)
-            
-            # DETERMINISTIC RULES with real indicators
-            return self._apply_technical_rules(indicators)
-            
-        except Exception as e:
-            logger.error(f"Technical signal generation failed: {e}")
-            return self._neutral_signal(f"Technical analysis failed: {str(e)}")
+        # Load data
+        df = self.data_loader.load_ohlcv(symbol)
+        
+        if df.empty or len(df) < 200:
+            return self._neutral_signal("Insufficient data")
+        
+        # Calculate indicators
+        df_with_features = self.feature_engine.calculate_all(df)
+        indicators = self.feature_engine.get_current_values(df_with_features)
+        
+        # DETERMINISTIC RULES
+        return self._apply_technical_rules(indicators)
     
     def _apply_technical_rules(self, ind: Dict) -> Dict:
         """
@@ -75,7 +61,7 @@ class TechnicalAgentV2:
         reasons = []
         
         # Rule 1: RSI Oversold/Overbought (weight: 0.25)
-        if ind.get('rsi_14'):
+        if ind.get('rsi_14') is not None:
             if ind['rsi_14'] < 30:
                 signals.append(1)  # Oversold -> Buy
                 confidence_weights.append(0.25)
@@ -89,15 +75,27 @@ class TechnicalAgentV2:
                 confidence_weights.append(0.1)
         
         # Rule 2: MACD Crossover (weight: 0.30)
-        if ind.get('macd_diff'):
+        if ind.get('macd_diff') is not None:
+            macd_diff = float(ind['macd_diff'])
+            macd_abs = abs(macd_diff)
             if ind['macd_diff'] > 0:
                 signals.append(1)
                 confidence_weights.append(0.30)
-                reasons.append(f"MACD bullish ({ind['macd_diff']:.4f})")
+                if macd_abs < 1e-4:
+                    reasons.append("MACD slightly bullish (near zero momentum)")
+                else:
+                    reasons.append(f"MACD bullish ({macd_diff:.4f})")
             elif ind['macd_diff'] < 0:
                 signals.append(-1)
                 confidence_weights.append(0.30)
-                reasons.append(f"MACD bearish ({ind['macd_diff']:.4f})")
+                if macd_abs < 1e-4:
+                    reasons.append("MACD slightly bearish (near zero momentum)")
+                else:
+                    reasons.append(f"MACD bearish ({macd_diff:.4f})")
+            else:
+                signals.append(0)
+                confidence_weights.append(0.05)
+                reasons.append("MACD neutral (momentum near zero)")
         
         # Rule 3: Bollinger Bands (weight: 0.20)
         if ind.get('bb_position') is not None:
@@ -111,7 +109,7 @@ class TechnicalAgentV2:
                 reasons.append("Price at upper Bollinger Band")
         
         # Rule 4: Trend (SMA alignment) (weight: 0.25)
-        if ind.get('sma_trend'):
+        if ind.get('sma_trend') is not None:
             if ind['sma_trend'] == 'strong_bullish':
                 signals.append(1)
                 confidence_weights.append(0.25)
@@ -146,7 +144,6 @@ class TechnicalAgentV2:
         
         return {
             'signal': final_signal,
-            'direction': self._signal_to_direction(final_signal),
             'confidence': confidence,
             'features_used': ind,
             'deterministic_reason': '; '.join(reasons) if reasons else 'Mixed signals',
@@ -157,7 +154,6 @@ class TechnicalAgentV2:
         """Return neutral signal"""
         return {
             'signal': 0,
-            'direction': self._signal_to_direction(0),
             'confidence': 0.0,
             'features_used': {},
             'deterministic_reason': reason,

@@ -1,86 +1,67 @@
 """
 Database connection managers for PostgreSQL and InfluxDB
 """
+import time
 import psycopg2
 from influxdb_client import InfluxDBClient
 from django.conf import settings
 from contextlib import contextmanager
-import logging
 
-logger = logging.getLogger(__name__)
+# ── Circuit-breaker state (module-level, shared across all calls) ──────────
+_influx_unavailable_until: float = 0.0   # epoch seconds
+_influx_circuit_open_seconds: int = 60   # back-off window
+
+_postgres_unavailable_until: float = 0.0
+_postgres_circuit_open_seconds: int = 30
 
 
 class DatabaseManager:
     """Centralized database connection management"""
-    
-    def __init__(self):
-        self.postgres_conn = None
-        self.influx_client = None
-    
-    def query_postgres(self, query: str, params: tuple = None):
-        """Execute PostgreSQL query and return DataFrame"""
-        import pandas as pd
-        import warnings
-        
-        # Suppress SQLAlchemy warnings
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', category=UserWarning)
-            
-            with self.get_postgres_connection() as conn:
-                try:
-                    if params:
-                        df = pd.read_sql(query, conn, params=params)
-                    else:
-                        df = pd.read_sql(query, conn)
-                    return df
-                except Exception as e:
-                    logger.error(f"PostgreSQL query error: {e}")
-                    return pd.DataFrame()
-    
-    def execute_postgres(self, query: str, params: tuple = None):
-        """Execute PostgreSQL query (no return data)"""
-        with self.get_postgres_connection() as conn:
-            try:
-                cursor = conn.cursor()
-                if params:
-                    cursor.execute(query, params)
-                else:
-                    cursor.execute(query)
-                conn.commit()
-                return True
-            except Exception as e:
-                logger.error(f"PostgreSQL execute error: {e}")
-                conn.rollback()
-                return False
-    
+
     @staticmethod
     @contextmanager
     def get_postgres_connection():
-        """Get PostgreSQL connection"""
-        conn = psycopg2.connect(
-            host=settings.POSTGRES_HOST,
-            port=settings.POSTGRES_PORT,
-            database=settings.POSTGRES_DB,
-            user=settings.POSTGRES_USER,
-            password=settings.POSTGRES_PASSWORD
-        )
+        """Get PostgreSQL connection — raises immediately if circuit is open."""
+        global _postgres_unavailable_until
+        if time.time() < _postgres_unavailable_until:
+            raise ConnectionError("PostgreSQL circuit open — skipping connection attempt")
+        try:
+            conn = psycopg2.connect(
+                host=settings.POSTGRES_HOST,
+                port=settings.POSTGRES_PORT,
+                database=settings.POSTGRES_DB,
+                user=settings.POSTGRES_USER,
+                password=settings.POSTGRES_PASSWORD,
+                connect_timeout=3,  # 3s max — fall back to SQLite quickly
+            )
+        except Exception:
+            _postgres_unavailable_until = time.time() + _postgres_circuit_open_seconds
+            raise
         try:
             yield conn
         finally:
             conn.close()
-    
+
     @staticmethod
     @contextmanager
     def get_influx_client():
-        """Get InfluxDB client"""
+        """Get InfluxDB client — raises immediately if circuit is open."""
+        global _influx_unavailable_until
+        if time.time() < _influx_unavailable_until:
+            raise ConnectionError("InfluxDB circuit open — skipping connection attempt")
         client = InfluxDBClient(
             url=settings.INFLUX_URL,
             token=settings.INFLUX_TOKEN,
-            org=settings.INFLUX_ORG
+            org=settings.INFLUX_ORG,
+            timeout=1_000,  # 1 s — fail fast when InfluxDB is unavailable
         )
         try:
             yield client
-        finally:
+        except Exception:
+            _influx_unavailable_until = time.time() + _influx_circuit_open_seconds
+            client.close()
+            raise
+        else:
             client.close()
 
 

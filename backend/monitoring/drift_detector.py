@@ -21,77 +21,56 @@ class DriftDetector:
         self.db = DatabaseManager()
         self.baseline_stats = {}
     
-    def detect_sentiment_drift(self) -> Dict:
+    def detect_sentiment_drift(self, recent_window: int = 7) -> Dict:
         """
-        Detect drift in sentiment analysis
-        
-        Returns:
-            {
-                'detected': bool,
-                'drift_score': float,
-                'baseline_mean': float,
-                'current_mean': float,
-                'sample_size': int
-            }
+        Detect if sentiment distribution has shifted
+
+        Uses Kolmogorov-Smirnov test
         """
         try:
-            db = DatabaseManager()
+            # Get baseline (30-60 days ago)
+            baseline_start = datetime.now() - timedelta(days=60)
+            baseline_end = datetime.now() - timedelta(days=30)
             
-            # Use agent_performance_log for sentiment drift detection
-            with db.get_postgres_connection() as conn:
-                # Get baseline sentiment performance (last 30 days)
+            # Get recent (last N days)
+            recent_start = datetime.now() - timedelta(days=recent_window)
+            
+            with self.db.get_postgres_connection() as conn:
                 baseline_query = """
-                SELECT AVG(CASE WHEN was_correct THEN 1 ELSE 0 END) as accuracy
-                FROM agent_performance_log 
-                WHERE agent_name = 'SentimentV2'
-                AND timestamp >= NOW() - INTERVAL '30 days'
+                SELECT sentiment_score
+                FROM news_sentiment_processed
+                WHERE processed_at BETWEEN %s AND %s
                 """
-                baseline = pd.read_sql(baseline_query, conn)
+                baseline = pd.read_sql(baseline_query, conn, params=(baseline_start, baseline_end))
                 
-                # Get recent sentiment performance (last 7 days)
                 recent_query = """
-                SELECT AVG(CASE WHEN was_correct THEN 1 ELSE 0 END) as accuracy
-                FROM agent_performance_log 
-                WHERE agent_name = 'SentimentV2'
-                AND timestamp >= NOW() - INTERVAL '7 days'
+                SELECT sentiment_score
+                FROM news_sentiment_processed
+                WHERE processed_at >= %s
                 """
-                recent = pd.read_sql(recent_query, conn)
+                recent = pd.read_sql(recent_query, conn, params=(recent_start,))
             
-            if baseline.empty or recent.empty or baseline['accuracy'].isna().all() or recent['accuracy'].isna().all():
-                return {
-                    'detected': False,
-                    'drift_score': 0.0,
-                    'baseline_mean': 0.0,
-                    'current_mean': 0.0,
-                    'sample_size': 0
-                }
+            if baseline.empty or recent.empty:
+                return {'drift_detected': False, 'reason': 'Insufficient data'}
             
-            baseline_mean = float(baseline['accuracy'].iloc[0])
-            current_mean = float(recent['accuracy'].iloc[0])
+            # KS test
+            ks_statistic, p_value = stats.ks_2samp(
+                baseline['sentiment_score'],
+                recent['sentiment_score']
+            )
             
-            # Calculate drift score (absolute difference)
-            drift_score = abs(baseline_mean - current_mean)
-            
-            # Detect drift if difference > 20%
-            detected = drift_score > 0.2
+            drift_detected = p_value < 0.05  # 95% confidence
             
             return {
-                'detected': detected,
-                'drift_score': drift_score,
-                'baseline_mean': baseline_mean,
-                'current_mean': current_mean,
-                'sample_size': len(recent)
+                'drift_detected': drift_detected,
+                'p_value': float(p_value),
+                'ks_statistic': float(ks_statistic),
+                'baseline_mean': float(baseline['sentiment_score'].mean()),
+                'recent_mean': float(recent['sentiment_score'].mean()),
+                'reason': 'Sentiment distribution has shifted significantly' if drift_detected else 'No drift'
             }
-            
-        except Exception as e:
-            logger.error(f"Error detecting sentiment drift: {e}")
-            return {
-                'detected': False,
-                'drift_score': 0.0,
-                'baseline_mean': 0.0,
-                'current_mean': 0.0,
-                'sample_size': 0
-            }
+        except Exception:
+            return {'drift_detected': False, 'reason': 'Insufficient data'}
     
     def detect_volatility_regime_change(self, symbol: str, window: int = 20) -> Dict:
         """

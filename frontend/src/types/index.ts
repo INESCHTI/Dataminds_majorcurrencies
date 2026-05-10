@@ -140,6 +140,37 @@ export interface DailyPerformance {
     trades: number;
 }
 
+export interface ReportHistoryRow {
+    id: number;
+    agent_name: string;
+    pair: string;
+    direction: "BUY" | "SELL" | "NEUTRAL";
+    confidence: number;
+    outcome: "WIN" | "LOSS";
+    pnl: number;
+    time: string;
+}
+
+export interface ReportSummaryResponse {
+    kpis: {
+        total_pnl: number;
+        win_rate: number;
+        sharpe: number;
+        signals: number;
+        confluence: number;
+    };
+    curve: Array<{
+        date: string;
+        daily_pnl: number;
+        cumulative_pnl: number;
+        win_rate: number;
+        trades: number;
+    }>;
+    history: ReportHistoryRow[];
+    days: number;
+    pair: string;
+}
+
 // â”€â”€â”€ Trading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type OrderSide = "BUY" | "SELL";
 export type OrderType = "MARKET" | "LIMIT" | "STOP";
@@ -240,12 +271,53 @@ export interface FreshnessHealthV2 {
     timestamp: string;
     freshness: {
         status: "PASS" | "WARN" | "NO_DATA";
-        last_news_timestamp: string | null;
-        age_minutes: number | null;
-        articles_last_1h: number;
-        articles_last_24h: number;
         freshness_score: number;
-        target_max_age_minutes: number;
+        data_types: {
+            news: {
+                status: "PASS" | "WARN" | "NO_DATA";
+                last_news_timestamp: string | null;
+                age_minutes: number | null;
+                latency: {
+                    source_access_lag_minutes: number | null;
+                    extraction_transfer_minutes: number;
+                    total_latency_minutes: number | null;
+                };
+                articles_last_1h: number;
+                articles_last_24h: number;
+                freshness_score: number;
+                target_max_age_minutes: number;
+            };
+            macro: {
+                status: "PASS" | "WARN" | "NO_DATA";
+                last_timestamp: string | null;
+                age_minutes: number | null;
+                latency: {
+                    source_access_lag_minutes: number | null;
+                    extraction_transfer_minutes: number;
+                    total_latency_minutes: number | null;
+                };
+                freshness_score: number;
+                target_max_age_minutes: number;
+            };
+            ohlcv: {
+                status: "PASS" | "WARN" | "NO_DATA";
+                last_timestamp: string | null;
+                age_minutes: number | null;
+                latency: {
+                    source_access_lag_minutes: number | null;
+                    extraction_transfer_minutes: number;
+                    total_latency_minutes: number | null;
+                };
+                freshness_score: number;
+                target_max_age_minutes: number;
+            };
+        };
+        recommended_actions: Array<{
+            data_type: "news" | "macro" | "ohlcv";
+            severity: "medium" | "high";
+            reason: string;
+            action: string;
+        }>;
     };
 }
 
@@ -261,6 +333,120 @@ export interface DriftDetectionV2 {
         regime_confidence: number;
         trend: string;
     };
+    timestamp: string;
+}
+
+// ─── Master Signal (unified pipeline response) ──────────────────────────────
+
+export interface AgentVote {
+    signal: SignalDirection;
+    signal_value: -1 | 0 | 1;
+    confidence: number;
+    weight: number;
+    contribution: number;
+    key_features: string[];
+    reasoning: string;
+    influence_rank: number | null;
+    // Geopolitical-specific extras
+    key_events?: string[];
+    impacted_currencies?: string[];
+}
+
+export interface XaiAgentBreakdown {
+    TechnicalV2?: AgentVote;
+    MacroV2?: AgentVote;
+    SentimentV2?: AgentVote;
+    GeopoliticalV2?: AgentVote;
+    [key: string]: AgentVote | undefined;
+}
+
+export interface MasterSignalResponse {
+    success: boolean;
+    decision: "APPROVED" | "APPROVED_MODIFIED" | "REJECTED" | "BLOCKED";
+    pair: string;
+    signal: {
+        direction: SignalDirection;
+        signal_value: -1 | 0 | 1;
+        confidence: number;
+    };
+    coordinator: {
+        weighted_score: number;
+        market_regime: string;
+        conflicts_detected: boolean;
+        conflict_description: string;
+    };
+    judge: {
+        verdict: "APPROVE" | "REJECT" | "MODIFY";
+        reasoning: string;
+        latency_ms: number;
+        from_cache: boolean;
+    };
+    actuarial: {
+        expected_value_pips: number;
+        probability_win: number;
+        probability_loss: number;
+        risk_reward_ratio: number;
+        kelly_fraction: number;
+        verdict: string;
+    };
+    execution_plan?: {
+        entry_price: number;
+        position_size: number;
+        stop_loss: number | null;
+        take_profit: number | null;
+        stop_loss_pips: number;
+        take_profit_pips: number;
+        risk_pct: number;
+    };
+    rejection?: {
+        stage: string | null;
+        reason: string | null;
+    };
+    xai: {
+        agent_breakdown: XaiAgentBreakdown;
+        human_explanation: Record<string, unknown>;
+        rejection_stage: string | null;
+        rejection_reason: string | null;
+    };
+    geopolitical_events: string[];
+    timestamp: string;
+}
+
+// ─── Paper Trading ──────────────────────────────────────────────────────────
+
+export interface PaperPosition {
+    id: number;
+    pair: PairSymbol;
+    side: "BUY" | "SELL";
+    size: number;
+    entry_price: number;
+    current_price: number;
+    stop_loss: number | null;
+    take_profit: number | null;
+    pnl: number;
+    pnl_pct: number;
+    status: "OPEN" | "CLOSED";
+    opened_at: string;
+    closed_at: string | null;
+}
+
+export interface PortfolioStats {
+    total_pnl: number;
+    total_trades: number;
+    win_rate: number;
+    sharpe_ratio: number;
+    max_drawdown: number;
+    open_positions: number;
+    total_exposure: number;
+}
+
+// ─── WebSocket price tick ────────────────────────────────────────────────────
+
+export interface PriceTick {
+    pair: string;
+    price: number;
+    bid: number;
+    ask: number;
     timestamp: string;
 }
 

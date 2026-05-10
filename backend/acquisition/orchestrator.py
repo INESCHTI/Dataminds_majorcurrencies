@@ -2,9 +2,9 @@
 Unified data acquisition orchestrator
 Manages MT5, FRED, and News data collection
 """
-from acquisition.mt5_collector import collect_mt5_data
-from acquisition.fred_collector import collect_fred_data
-from acquisition.news_collector import collect_news_data
+from acquisition.mt5_collector import main as collect_mt5_data
+from acquisition.fred_collector import main as collect_fred_data
+from acquisition.news_collector import main as collect_news_data
 
 
 def run_full_acquisition():

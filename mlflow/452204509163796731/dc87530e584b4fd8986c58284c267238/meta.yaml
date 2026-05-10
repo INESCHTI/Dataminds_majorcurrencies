@@ -1,0 +1,15 @@
+artifact_uri: file://D:\Téléchargements\trady\mlflow/452204509163796731/dc87530e584b4fd8986c58284c267238/artifacts
+end_time: 1776511005349
+entry_point_name: ''
+experiment_id: '452204509163796731'
+lifecycle_stage: active
+run_id: dc87530e584b4fd8986c58284c267238
+run_name: full_benchmark_USDJPY_20260418_121645
+run_uuid: dc87530e584b4fd8986c58284c267238
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776511005314
+status: 3
+tags: []
+user_id: marie

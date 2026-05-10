@@ -82,17 +82,13 @@ class SafetyMonitor:
         
         try:
             with DatabaseManager.get_postgres_connection() as conn:
-                import warnings
-                with warnings.catch_warnings():
-                    warnings.filterwarnings('ignore', category=UserWarning)
-                    
-                    query = """
-                    SELECT pnl
-                    FROM agent_performance_log
-                    WHERE timestamp >= %s
-                    ORDER BY timestamp
-                    """
-                    df = pd.read_sql(query, conn, params=(start_date,))
+                query = """
+                SELECT pnl
+                FROM agent_performance_log
+                WHERE created_at >= %s
+                ORDER BY created_at
+                """
+                df = pd.read_sql(query, conn, params=(start_date,))
         except Exception:
             return {'triggered': False, 'reason': 'No recent trades'}
         

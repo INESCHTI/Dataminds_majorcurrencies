@@ -6,12 +6,13 @@ services:
     image: postgres:15
     environment:
       POSTGRES_DB: forex_metadata
-      POSTGRES_USER: forex_user
-      POSTGRES_PASSWORD: forex_pass
+      POSTGRES_USER: dataminds
+      POSTGRES_PASSWORD: dataminds_secure_password
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ../Data Acquisition/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   influxdb:
     image: influxdb:2.7
@@ -23,14 +24,14 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: forex_data
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my-super-secret-token
     ports:
-      - "8088:8086"
+      - "8086:8086"
     volumes:
       - influxdb_data:/var/lib/influxdb2
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6380:6379"
+      - "6379:6379"
 
 volumes:
   postgres_data:

@@ -1,0 +1,15 @@
+artifact_uri: file://D:\Téléchargements\trady\mlflow/452204509163796731/2bf8f8469b1d4f45953b8360655922ec/artifacts
+end_time: 1776511005197
+entry_point_name: ''
+experiment_id: '452204509163796731'
+lifecycle_stage: active
+run_id: 2bf8f8469b1d4f45953b8360655922ec
+run_name: technical_agent_EURUSD_20260418_121645
+run_uuid: 2bf8f8469b1d4f45953b8360655922ec
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776511005165
+status: 4
+tags: []
+user_id: marie

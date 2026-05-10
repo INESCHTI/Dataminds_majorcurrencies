@@ -5,14 +5,17 @@ Clean separation: data -> features -> signals -> monitoring
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from datetime import datetime
-import json
+from time import perf_counter
 
 from signal_layer.coordinator_agent_v2 import CoordinatorAgentV2
 from monitoring.performance_tracker import PerformanceTracker
 from monitoring.drift_detector import DriftDetector
 from monitoring.safety_monitor import SafetyMonitor
-from data_layer.news_loader_fixed import NewsLoader
+from data_layer.news_loader import NewsLoader
+from data_layer.macro_loader import MacroDataLoader
+from data_layer.timeseries_loader import TimeSeriesLoader
 
 
 class TradingSignalV2ViewSet(viewsets.ViewSet):
@@ -45,16 +48,7 @@ class TradingSignalV2ViewSet(viewsets.ViewSet):
         - Safety checks
         - Explanations
         """
-        # Handle both dict and string request.data
-        if isinstance(request.data, str):
-            try:
-                data = json.loads(request.data)
-            except json.JSONDecodeError:
-                data = {}
-        else:
-            data = request.data
-        
-        pair = data.get('pair', 'EURUSD')
+        pair = request.data.get('pair', 'EURUSD')
         
         # Parse pair (e.g., "EURUSD" -> "EUR" / "USD")
         if len(pair) == 6:
@@ -79,44 +73,60 @@ class TradingSignalV2ViewSet(viewsets.ViewSet):
         
         # Generate signal
         try:
-            print(f"DEBUG: API calling generate_and_record_signal for {pair}")
-            result = self.coordinator.generate_and_record_signal(pair)
-            print(f"DEBUG: API received result: {result.get('signal_id', 'None')}")
-            
-            # Extract signal data
-            final_signal = result.get('final_signal', 0)
-            confidence = result.get('confidence', 0.0)
-            agent_signals = result.get('agent_signals', {})
+            result = self.coordinator.generate_final_signal(symbol, base, quote)
             
             # Map numeric signal to string for frontend
             signal_map = {1: 'BUY', -1: 'SELL', 0: 'NEUTRAL'}
-            direction = signal_map.get(final_signal, 'NEUTRAL')
             
             # Build conflicts list
-            conflicts_detected = result.get('conflicts_detected', [])
+            conflicts_detected = result.get('conflicts_detected', False)
             conflicts_list = []
             if conflicts_detected:
-                conflicts_list = conflicts_detected
-            else:
-                # Check for agent disagreements
                 for agent, data in result['agent_signals'].items():
                     sig = signal_map.get(data['signal'], 'NEUTRAL')
-                    if data['confidence'] > 0.6:  # Only show high-confidence signals in conflicts
-                        conflicts_list.append(f"{agent}: {sig} ({data['confidence']:.0%})")
+                    conflicts_list.append(f"{agent}: {sig} ({data['confidence']:.0%})")
             
             direction = signal_map.get(result['final_signal'], 'NEUTRAL')
             confidence = result['confidence']
-            
-            # Generate reasoning from agent breakdown
-            reasoning_parts = []
-            for agent, data in result['agent_signals'].items():
-                agent_name = agent.lower().replace('v2', '')
-                sig = signal_map.get(data['signal'], 'NEUTRAL')
-                reasoning_parts.append(f"- {agent.title()}V2: {sig} (confidence: {data['confidence']:.0%}, weight: {result['weights_used'].get(agent, 0):.0%})\n  Reason: {data.get('reasoning', 'Analysis based on indicators')}")
-            
-            final_reasoning = f"Final Decision: {direction}\n\nAgent Breakdown:\n" + "\n".join(reasoning_parts)
 
-            # Skip duplicate recording - coordinator already handled it
+            # Auto-log to trading_signals_log
+            try:
+                from core.database import DatabaseManager
+                import json as _json
+                with DatabaseManager.get_postgres_connection() as conn:
+                    cur = conn.cursor()
+                    cur.execute("""
+                        INSERT INTO trading_signals_log (pair, direction, confidence, agent_votes, reasoning, created_at)
+                        VALUES (%s, %s, %s, %s, %s, NOW())
+                    """, (
+                        symbol,
+                        direction,
+                        confidence,
+                        _json.dumps({
+                            agent.lower().replace('v2',''): {
+                                'signal': signal_map.get(data['signal'], 'NEUTRAL'),
+                                'confidence': data['confidence']
+                            }
+                            for agent, data in result['agent_signals'].items()
+                        }),
+                        result['explanation'][:500]
+                    ))
+                    # Also log per-agent entry to agent_performance_log
+                    for agent_name, data in result['agent_signals'].items():
+                        cur.execute("""
+                            INSERT INTO agent_performance_log (agent_name, pair, signal_direction, confidence, was_correct, pnl, created_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                        """, (
+                            agent_name,
+                            symbol,
+                            signal_map.get(data['signal'], 'NEUTRAL'),
+                            data['confidence'],
+                            None,  # outcome unknown at signal time
+                            None
+                        ))
+                    conn.commit()
+            except Exception:
+                pass  # Don't break signal generation if logging fails
             
             return Response({
                 'success': True,
@@ -124,7 +134,7 @@ class TradingSignalV2ViewSet(viewsets.ViewSet):
                     'direction': direction,
                     'confidence': confidence,
                     'weighted_score': result.get('weighted_score', 0.0),
-                    'reasoning': final_reasoning,
+                    'reasoning': result['explanation'],
                     'agent_votes': {
                         agent.lower().replace('v2', ''): {
                             'signal': signal_map.get(data['signal'], 'NEUTRAL'),
@@ -139,8 +149,7 @@ class TradingSignalV2ViewSet(viewsets.ViewSet):
                     },
                     'market_regime': result['market_regime'],
                     'conflicts': conflicts_list,
-                    'timestamp': result['timestamp'],
-                    'signal_id': result.get('signal_id', None)
+                    'timestamp': result['timestamp']
                 },
                 'metadata': {
                     'execution_time_ms': 0,
@@ -157,88 +166,6 @@ class TradingSignalV2ViewSet(viewsets.ViewSet):
                 'success': False,
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    @action(detail=False, methods=['post'])
-    def generate_orchestrated_signal(self, request):
-        """
-        Generate trading signal with INTELLIGENT ORCHESTRATION
-        
-        LLM acts as JUDGE to route query to relevant agents only
-        
-        POST /api/v2/signals/generate_orchestrated_signal/
-        Body: {
-            "pair": "EURUSD",
-            "query": "EURUSD broke resistance on Fed rate hike news",
-            "context": {"timeframe": "4H", "urgency": "high"}
-        }
-        
-        Example routing:
-        - "broke resistance" → TechnicalAgent (primary)
-        - "Fed rate hike" → MacroAgent (primary) + SentimentAgent (secondary)
-        - "election in France" → GeopoliticalAgent (primary)
-        """
-        # Parse request data
-        if isinstance(request.data, str):
-            try:
-                data = json.loads(request.data)
-            except json.JSONDecodeError:
-                data = {}
-        else:
-            data = request.data
-        
-        pair = data.get('pair', 'EURUSD')
-        query = data.get('query', '')
-        context = data.get('context', {})
-        
-        # Parse pair
-        if len(pair) == 6:
-            base = pair[:3]
-            quote = pair[3:6]
-        else:
-            base = 'EUR'
-            quote = 'USD'
-        
-        # Safety check
-        safety_check = self.safety_monitor.should_allow_signal(pair)
-        if not safety_check['allowed']:
-            return Response({
-                'success': False,
-                'signal_generated': False,
-                'reason': safety_check['reason'],
-                'safety_checks': safety_check
-            }, status=status.HTTP_403_FORBIDDEN)
-        
-        # Generate orchestrated signal
-        try:
-            result = self.coordinator.generate_orchestrated_signal(
-                symbol=pair,
-                base_currency=base,
-                quote_currency=quote,
-                query=query,
-                context=context
-            )
-            
-            return Response({
-                'success': True,
-                'signal': {
-                    'direction': result['direction'],
-                    'confidence': result['confidence'],
-                    'weighted_score': result['final_signal'],
-                    'reasoning': result['explanation'],
-                    'agent_votes': result['agent_votes'],
-                    'market_regime': result['market_regime']
-                },
-                'orchestration': result['orchestration'],
-                'execution_time': result['execution_time'],
-                'timestamp': result['timestamp']
-            })
-        
-        except Exception as e:
-            return Response({
-                'success': False,
-                'error': str(e),
-                'message': 'Orchestrated signal generation failed'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PerformanceMonitoringViewSet(viewsets.ViewSet):
@@ -252,16 +179,135 @@ class PerformanceMonitoringViewSet(viewsets.ViewSet):
         self.drift_detector = DriftDetector()
         self.safety_monitor = SafetyMonitor()
         self.news_loader = NewsLoader()
+        self.macro_loader = MacroDataLoader()
+        self.timeseries_loader = TimeSeriesLoader()
+
+    @staticmethod
+    def _generic_freshness(last_ts, target_minutes: int, extraction_transfer_minutes: float = 0.0):
+        if last_ts is None:
+            return {
+                'status': 'NO_DATA',
+                'last_timestamp': None,
+                'age_minutes': None,
+                'latency': {
+                    'source_access_lag_minutes': None,
+                    'extraction_transfer_minutes': round(max(extraction_transfer_minutes, 0.0), 3),
+                    'total_latency_minutes': None,
+                },
+                'freshness_score': 0.0,
+                'target_max_age_minutes': target_minutes,
+            }
+
+        ts = last_ts.replace(tzinfo=None)
+        age_minutes = max((datetime.now() - ts).total_seconds() / 60.0, 0.0)
+        age_score = max(0.0, 1.0 - (age_minutes / max(float(target_minutes), 1.0)))
+        freshness_score = round(age_score * 100.0, 1)
+
+        return {
+            'status': 'PASS' if age_minutes <= target_minutes else 'WARN',
+            'last_timestamp': ts.isoformat(),
+            'age_minutes': round(age_minutes, 1),
+            'latency': {
+                'source_access_lag_minutes': round(age_minutes, 3),
+                'extraction_transfer_minutes': round(max(extraction_transfer_minutes, 0.0), 3),
+                'total_latency_minutes': round(age_minutes + max(extraction_transfer_minutes, 0.0), 3),
+            },
+            'freshness_score': freshness_score,
+            'target_max_age_minutes': target_minutes,
+        }
+
+    def _build_freshness_snapshot(self, request):
+        news_target = int(request.query_params.get('news_target_minutes', request.query_params.get('target_minutes', 2880)))  # 48h — realistic for weekends/free API
+        ohlcv_target = int(request.query_params.get('ohlcv_target_minutes', 10080))   # 7 days — daily candles from free-tier AV
+        macro_target = int(request.query_params.get('macro_target_minutes', 10080))
+
+        t0 = perf_counter()
+        news_freshness = self.news_loader.get_freshness_health(freshness_target_minutes=news_target)
+        news_query_minutes = (perf_counter() - t0) / 60.0
+        news_pipeline_delay = self.news_loader.latest_transfer_delay_minutes()
+        news_total_transfer = news_pipeline_delay + news_query_minutes
+
+        news_age = news_freshness.get('age_minutes')
+        news_freshness['latency'] = {
+            'source_access_lag_minutes': round(news_age, 3) if news_age is not None else None,
+            'extraction_transfer_minutes': round(max(news_total_transfer, 0.0), 3),
+            'total_latency_minutes': round(news_age + max(news_total_transfer, 0.0), 3) if news_age is not None else None,
+        }
+
+        t1 = perf_counter()
+        macro_last_ts = self.macro_loader.latest_timestamp()
+        macro_query_minutes = (perf_counter() - t1) / 60.0
+        macro_freshness = self._generic_freshness(
+            macro_last_ts,
+            macro_target,
+            extraction_transfer_minutes=macro_query_minutes,
+        )
+
+        t2 = perf_counter()
+        ohlcv_last_ts = self.timeseries_loader.latest_timestamp(timeframe='1h')  # yfinance stores hourly candles
+        ohlcv_query_minutes = (perf_counter() - t2) / 60.0
+        ohlcv_freshness = self._generic_freshness(
+            ohlcv_last_ts,
+            ohlcv_target,
+            extraction_transfer_minutes=ohlcv_query_minutes,
+        )
+
+        data_types = {
+            'news': news_freshness,
+            'macro': macro_freshness,
+            'ohlcv': ohlcv_freshness,
+        }
+
+        statuses = [item.get('status', 'NO_DATA') for item in data_types.values()]
+        if any(s == 'WARN' for s in statuses):
+            overall_status = 'WARN'
+        elif all(s == 'NO_DATA' for s in statuses):
+            overall_status = 'NO_DATA'
+        elif any(s == 'PASS' for s in statuses):
+            overall_status = 'PASS'
+        else:
+            overall_status = 'NO_DATA'
+
+        overall_score = round(
+            sum(float(item.get('freshness_score', 0.0)) for item in data_types.values()) / max(len(data_types), 1),
+            1,
+        )
+
+        recommended_actions = []
+        for data_type, payload in data_types.items():
+            state = payload.get('status', 'NO_DATA')
+            if state == 'PASS':
+                continue
+
+            if data_type == 'news':
+                action = 'Trigger news refresh via /api/v2/data/refresh_news/'
+            elif data_type == 'macro':
+                action = 'Run macro ingestion (FRED) to update macro indicators'
+            else:
+                action = 'Run MT5 ingestion to refresh OHLCV candles'
+
+            recommended_actions.append({
+                'data_type': data_type,
+                'severity': 'high' if state == 'NO_DATA' else 'medium',
+                'reason': 'No recent data available' if state == 'NO_DATA' else 'Data is older than freshness target',
+                'action': action,
+            })
+
+        return {
+            'status': overall_status,
+            'freshness_score': overall_score,
+            'data_types': data_types,
+            'recommended_actions': recommended_actions,
+        }
 
     @action(detail=False, methods=['get'])
     def freshness_health(self, request):
         """
-        News freshness health metrics.
+        Freshness health metrics for all data types (news, macro, OHLCV).
 
         GET /api/v2/monitoring/freshness_health/
         """
-        target_minutes = int(request.query_params.get('target_minutes', 240))
-        freshness = self.news_loader.get_freshness_health(freshness_target_minutes=target_minutes)
+        freshness = self._build_freshness_snapshot(request)
 
         return Response({
             'timestamp': datetime.now().isoformat(),
@@ -278,9 +324,9 @@ class PerformanceMonitoringViewSet(viewsets.ViewSet):
         days = int(request.query_params.get('days', 30))
         
         # Get performance data for each agent
-        agents = ['TechnicalV2', 'MacroV2', 'SentimentV2']
+        agents = ['TechnicalV2', 'MacroV2', 'SentimentV2', 'GeopoliticalV2']
         performance = {}
-        
+
         for agent_name in agents:
             perf = self.perf_tracker.get_agent_performance(agent_name=agent_name, days=days)
             performance[agent_name] = {
@@ -335,12 +381,12 @@ class PerformanceMonitoringViewSet(viewsets.ViewSet):
         # Get real agent performances from database
         agents = ['TechnicalV2', 'MacroV2', 'SentimentV2', 'GeopoliticalV2']
         agent_performances = {}
-        
+
         for agent_name in agents:
             perf = self.perf_tracker.get_agent_performance(agent_name=agent_name, days=30)
-            agent_key = agent_name.lower().replace('v2', '')
-            agent_performances[agent_key] = {
-                'agent_type': agent_key,
+            # Use the full agent name as key so the frontend can match AGENTS config
+            agent_performances[agent_name] = {
+                'agent_type': agent_name,
                 'total_signals': perf.get('trade_count', 0),
                 'win_rate': perf.get('win_rate', 0.0),
                 'sharpe_ratio': perf.get('sharpe_ratio', 0.0),
@@ -354,7 +400,8 @@ class PerformanceMonitoringViewSet(viewsets.ViewSet):
         
         drift_data = self.drift_detector.get_drift_summary()
         drift_timestamp = drift_data.get('timestamp', datetime.now().isoformat())
-        freshness = self.news_loader.get_freshness_health()
+        freshness = self._build_freshness_snapshot(request)
+        news_freshness = freshness.get('data_types', {}).get('news', {})
         
         return Response({
             'status': 'operational',
@@ -373,12 +420,13 @@ class PerformanceMonitoringViewSet(viewsets.ViewSet):
                     'status': 'active',
                     'cooldown_active': circuit_breaker.get('triggered', False)
                 },
+                'data_freshness': freshness,
                 'news_freshness': {
-                    'status': freshness.get('status', 'WARN'),
-                    'age_minutes': freshness.get('age_minutes'),
-                    'articles_last_1h': freshness.get('articles_last_1h', 0),
-                    'articles_last_24h': freshness.get('articles_last_24h', 0),
-                    'freshness_score': freshness.get('freshness_score', 0.0)
+                    'status': news_freshness.get('status', 'WARN'),
+                    'age_minutes': news_freshness.get('age_minutes'),
+                    'articles_last_1h': news_freshness.get('articles_last_1h', 0),
+                    'articles_last_24h': news_freshness.get('articles_last_24h', 0),
+                    'freshness_score': news_freshness.get('freshness_score', 0.0)
                 }
             },
             'system': {
@@ -642,54 +690,124 @@ class ValidationViewSet(viewsets.ViewSet):
 
 class DataRefreshViewSet(viewsets.ViewSet):
     """
-    Background data refresh — triggered by the frontend on page load.
-    Runs news collection in a daemon thread so it never blocks the API.
+    MCP data refresh endpoints — trigger ingestion for News, OHLCV, and Macro.
+    All jobs run in daemon threads and return 202 immediately.
     """
+    permission_classes = [AllowAny]
+    # No session/CSRF required — these are background trigger endpoints
+    authentication_classes = []
 
-    # Simple in-memory state (per process)
-    _status = {'running': False, 'last_run': None, 'last_result': None}
+    # Per-source state: {source: {running, last_run, last_result}}
+    _state = {
+        'news': {'running': False, 'last_run': None, 'last_result': None},
+        'ohlcv': {'running': False, 'last_run': None, 'last_result': None},
+        'macro': {'running': False, 'last_run': None, 'last_result': None},
+    }
+
+    # keep legacy _status alias to not break existing callers
+    @property
+    def _status(self):
+        return self._state['news']
+
+    def _run_in_background(self, source: str, fn):
+        """Helper: run fn() in a daemon thread, updating _state[source]."""
+        import threading
+
+        state = DataRefreshViewSet._state[source]
+        if state['running']:
+            return False  # already running
+
+        def _worker():
+            state['running'] = True
+            try:
+                result = fn()
+                state['last_result'] = result if result else 'success'
+            except Exception as exc:
+                state['last_result'] = f'error: {exc}'
+            finally:
+                state['running'] = False
+                state['last_run'] = datetime.now().isoformat()
+
+        threading.Thread(target=_worker, daemon=True).start()
+        return True
 
     @action(detail=False, methods=['post'])
     def refresh_news(self, request):
         """
         POST /api/v2/data/refresh_news/
-        Starts a background thread that scrapes forex news RSS feeds
-        and inserts fresh articles into PostgreSQL.
-        Returns immediately with 202 Accepted.
+        Fetches fresh financial news from NewsAPI.org → SQLite.
         """
-        import threading
+        from scheduling.collectors.newsapi_collector import collect_newsapi
 
-        if DataRefreshViewSet._status['running']:
-            return Response({
-                'status': 'already_running',
-                'message': 'News refresh already in progress',
-                'last_run': DataRefreshViewSet._status['last_run'],
-            }, status=status.HTTP_202_ACCEPTED)
+        started = self._run_in_background('news', collect_newsapi)
+        if not started:
+            return Response(
+                {'status': 'already_running', 'message': 'News refresh already in progress',
+                 'last_run': DataRefreshViewSet._state['news']['last_run']},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        return Response({'status': 'started', 'message': 'News refresh running in background'},
+                        status=status.HTTP_202_ACCEPTED)
 
-        def _run():
-            DataRefreshViewSet._status['running'] = True
-            try:
-                from acquisition.news_collector import collect_news_data
-                collect_news_data()
-                DataRefreshViewSet._status['last_result'] = 'success'
-            except Exception as e:
-                DataRefreshViewSet._status['last_result'] = f'error: {e}'
-            finally:
-                DataRefreshViewSet._status['running'] = False
-                DataRefreshViewSet._status['last_run'] = datetime.now().isoformat()
+    @action(detail=False, methods=['post'])
+    def refresh_ohlcv(self, request):
+        """
+        POST /api/v2/data/refresh_ohlcv/
+        Fetches OHLCV candles from Yahoo Finance via yfinance → SQLite.
+        Uses yfinance (free, no API key, hourly data) instead of Alpha Vantage
+        to avoid the 13s/request rate-limit delay.
+        """
+        from scheduling.collectors.yfinance_collector import collect_yfinance_ohlcv
 
-        t = threading.Thread(target=_run, daemon=True)
-        t.start()
+        started = self._run_in_background('ohlcv', collect_yfinance_ohlcv)
+        if not started:
+            return Response(
+                {'status': 'already_running', 'message': 'OHLCV refresh already in progress',
+                 'last_run': DataRefreshViewSet._state['ohlcv']['last_run']},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        return Response({'status': 'started', 'message': 'OHLCV refresh running in background'},
+                        status=status.HTTP_202_ACCEPTED)
 
-        return Response({
-            'status': 'started',
-            'message': 'News refresh running in background',
-        }, status=status.HTTP_202_ACCEPTED)
+    @action(detail=False, methods=['post'])
+    def refresh_macro(self, request):
+        """
+        POST /api/v2/data/refresh_macro/
+        Fetches macro indicators from FRED → SQLite.
+        """
+        from scheduling.collectors.fred_collector_sqlite import collect_fred_macro
+
+        started = self._run_in_background('macro', collect_fred_macro)
+        if not started:
+            return Response(
+                {'status': 'already_running', 'message': 'Macro refresh already in progress',
+                 'last_run': DataRefreshViewSet._state['macro']['last_run']},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        return Response({'status': 'started', 'message': 'Macro refresh running in background'},
+                        status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=['get'])
     def status(self, request):
         """
         GET /api/v2/data/status/
-        Returns current refresh state and last run timestamp.
+        Returns ingestion state for all three sources plus scheduler info.
         """
-        return Response(DataRefreshViewSet._status)
+        from scheduling.models import IngestionLog
+        from django.utils import timezone as dj_tz
+
+        # Last successful ingestion per source from DB
+        db_last = {}
+        for src in ('news', 'ohlcv', 'macro'):
+            log = IngestionLog.objects.filter(source=src, status__in=['success', 'partial']).first()
+            db_last[src] = log.finished_at.isoformat() if log and log.finished_at else None
+
+        return Response({
+            'sources': DataRefreshViewSet._state,
+            'db_last_success': db_last,
+            'scheduler': {
+                'news_interval_minutes': int(__import__('os').getenv('NEWS_REFRESH_MINUTES', '120')),
+                'ohlcv_interval_minutes': int(__import__('os').getenv('OHLCV_REFRESH_MINUTES', '240')),
+                'macro_daily_hour_utc': int(__import__('os').getenv('MACRO_REFRESH_HOUR', '0')),
+            },
+        })

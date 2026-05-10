@@ -1,6 +1,7 @@
 ﻿import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { DataRefreshProvider } from "@/components/data-refresh-provider";
 
 export default function DashboardLayout({
     children,
@@ -12,7 +13,9 @@ export default function DashboardLayout({
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
-                    {children}
+                    <DataRefreshProvider>
+                        {children}
+                    </DataRefreshProvider>
                 </SidebarInset>
             </SidebarProvider>
         </TooltipProvider>

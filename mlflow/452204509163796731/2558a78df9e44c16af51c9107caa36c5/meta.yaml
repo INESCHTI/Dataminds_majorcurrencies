@@ -1,0 +1,15 @@
+artifact_uri: file://D:\Téléchargements\trady\mlflow/452204509163796731/2558a78df9e44c16af51c9107caa36c5/artifacts
+end_time: 1776511005390
+entry_point_name: ''
+experiment_id: '452204509163796731'
+lifecycle_stage: active
+run_id: 2558a78df9e44c16af51c9107caa36c5
+run_name: full_benchmark_USDCHF_20260418_121645
+run_uuid: 2558a78df9e44c16af51c9107caa36c5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776511005359
+status: 3
+tags: []
+user_id: marie

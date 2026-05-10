@@ -5,7 +5,7 @@ LLM only for classification, NOT for trading decisions
 from typing import Dict, List
 from datetime import datetime, timedelta
 import threading
-from data_layer.news_loader_fixed import NewsLoader
+from data_layer.news_loader import NewsLoader
 from feature_layer.sentiment_features import SentimentFeatureEngine
 
 
@@ -19,15 +19,6 @@ class SentimentAgentV2:
     
     Trading logic is DETERMINISTIC Python
     """
-    
-    def _signal_to_direction(self, signal: int) -> str:
-        """Convert numeric signal to direction string"""
-        if signal == 1:
-            return "BUY"
-        elif signal == -1:
-            return "SELL"
-        else:
-            return "NEUTRAL"
     
     def __init__(self):
         self.data_loader = NewsLoader()
@@ -102,9 +93,6 @@ class SentimentAgentV2:
         # Add agent identifier
         signal_data['agent'] = 'SentimentV2'
         
-        # Add direction to the signal
-        signal_data['direction'] = self._signal_to_direction(signal_data.get('signal', 0))
-        
         return signal_data
 
     def _refresh_news_data(self) -> None:
@@ -136,7 +124,6 @@ class SentimentAgentV2:
         """Return neutral signal"""
         return {
             'signal': 0,
-            'direction': self._signal_to_direction(0),
             'confidence': 0.0,
             'features_used': {},
             'deterministic_reason': reason,
